@@ -1,9 +1,0 @@
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/AgentScopeServer.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/HrIntentRouter.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/NonTechResponseComposer.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/ToolRegistry.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/tools/CliBridgeTool.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/tools/DocxGeneratorTool.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/tools/McpBridgeTool.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/tools/WebResearchTool.java
-/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-agentscope-server/src/main/java/com/yeahmobi/everything/agentscope/tools/WorkFollowupTool.java
