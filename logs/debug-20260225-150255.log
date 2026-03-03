@@ -1,0 +1,55 @@
+2月 25, 2026 3:03:08 下午 com.sun.javafx.application.PlatformImpl startup
+警告: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @18ae30ae'
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Configuration loaded.
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Local SQLite database initialized at: /Users/zhujinqi/.yeahmobi-everything/data.db
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.repository.mysql.MySQLDatabaseManager initialize
+信息: MySQL JDBC driver loaded successfully
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: MySQL database connected: jdbc:mysql://localhost:3306/yeahmobi_everything?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useUnicode=true
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.repository.cache.RedisManager <init>
+信息: RedisManager initialized: localhost:6379/0
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Redis connected: localhost:6379
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.App initializeServices
+信息: All services initialized.
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.App setupMacOSDock
+信息: macOS Taskbar/Dock integration initialized.
+2月 25, 2026 3:03:09 下午 com.yeahmobi.everything.App setupMacOSDock
+信息: macOS Dock behavior configured.
+2月 25, 2026 3:03:18 下午 com.yeahmobi.everything.auth.OAuthCallbackServer start
+信息: OAuth callback server started on port 8080
+2月 25, 2026 3:03:24 下午 com.yeahmobi.everything.auth.OAuthCallbackServer handleCallback
+信息: OAuth callback received with authorization code.
+2月 25, 2026 3:03:24 下午 com.yeahmobi.everything.ui.AuthController lambda$startCallbackServer$16
+信息: Received Feishu OAuth callback code.
+2月 25, 2026 3:03:24 下午 com.yeahmobi.everything.auth.AuthServiceImpl loginWithFeishu
+信息: Attempting to exchange Feishu authorization code for access token
+2月 25, 2026 3:03:24 下午 com.yeahmobi.everything.auth.FeishuOAuthService exchangeCodeForToken
+信息: Step 1: Requesting app_access_token from Feishu
+2月 25, 2026 3:03:24 下午 com.yeahmobi.everything.auth.FeishuOAuthService getAppAccessToken
+信息: Requesting app_access_token with app_id=cli_a2f36c916279100e
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.FeishuOAuthService getAppAccessToken
+信息: Successfully obtained app_access_token
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.FeishuOAuthService exchangeCodeForToken
+信息: Step 1: Successfully obtained app_access_token
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.FeishuOAuthService exchangeCodeForToken
+信息: Step 2: Exchanging authorization code for user access_token
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.FeishuOAuthService exchangeCodeForToken
+信息: Step 2: Successfully obtained user access_token
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.AuthServiceImpl loginWithFeishu
+信息: Attempting to fetch Feishu user info with access token
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.FeishuOAuthService getUserInfo
+信息: Step 3: Fetching user info from Feishu
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.FeishuOAuthService getUserInfo
+信息: Step 3: Successfully fetched user info - userId=on_34bbabec12deffa70ca62fccc17d6c21 (from union_id), name=Kinch(朱金奇), email=kinch.zhu@eclicktech.com.cn (from enterprise_email)
+2月 25, 2026 3:03:25 下午 com.yeahmobi.everything.auth.AuthServiceImpl loginWithFeishu
+信息: Successfully retrieved Feishu user info: userId=on_34bbabec12deffa70ca62fccc17d6c21, name=Kinch(朱金奇), email=kinch.zhu@eclicktech.com.cn
+2月 25, 2026 3:03:26 下午 com.yeahmobi.everything.auth.OAuthCallbackServer stop
+信息: OAuth callback server stopped.
+2月 25, 2026 3:03:28 下午 com.yeahmobi.everything.App onLoginSuccess
+信息: User logged in: Kinch(朱金奇) (feishu)

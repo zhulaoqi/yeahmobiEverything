@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.yeahmobi.everything.ui.MainController"
+            prefWidth="1280" prefHeight="800"
+            minWidth="1000" minHeight="700"
+            styleClass="window-root, wechat-layout">
+
+    <center>
+        <HBox>
+            <!-- 第一栏：左侧功能图标栏 (窄栏 ~64px) -->
+            <VBox fx:id="iconBar" styleClass="wechat-icon-bar" prefWidth="64" minWidth="64" maxWidth="64">
+                <padding><Insets top="12" right="8" bottom="20" left="8"/></padding>
+                
+                <!-- Window controls moved into menu bar -->
+                <HBox fx:id="windowBar" styleClass="window-bar, window-bar-inline" alignment="CENTER_LEFT">
+                    <padding><Insets top="2" right="4" bottom="8" left="4"/></padding>
+                    <HBox fx:id="windowBtnGroup" spacing="8" alignment="CENTER_LEFT" styleClass="window-btn-group">
+                        <Button fx:id="windowCloseBtn" text="" styleClass="window-btn, window-btn-close"
+                                onAction="#onWindowClose"/>
+                        <Button fx:id="windowMinBtn" text="" styleClass="window-btn, window-btn-min"
+                                onAction="#onWindowMinimize"/>
+                        <Button fx:id="windowMaxBtn" text="" styleClass="window-btn, window-btn-max"
+                                onAction="#onWindowMaximize"/>
+                    </HBox>
+                </HBox>
+                
+                <!-- 功能图标 - SVG矢量图标 -->
+                <Button fx:id="iconSkills" text="" styleClass="icon-bar-btn, icon-bar-btn-active" 
+                        onAction="#onIconSkills" maxWidth="Infinity" contentDisplay="GRAPHIC_ONLY"/>
+                <Button fx:id="iconMarket" text="" styleClass="icon-bar-btn" 
+                        onAction="#onIconMarket" maxWidth="Infinity" contentDisplay="GRAPHIC_ONLY"/>
+                <Button fx:id="iconFavorites" text="" styleClass="icon-bar-btn" 
+                        onAction="#onIconFavorites" maxWidth="Infinity" contentDisplay="GRAPHIC_ONLY"/>
+                <Button fx:id="iconTodos" text="" styleClass="icon-bar-btn"
+                        onAction="#onIconTodos" maxWidth="Infinity" contentDisplay="GRAPHIC_ONLY"/>
+                <Button fx:id="iconPersonal" text="" styleClass="icon-bar-btn" 
+                        onAction="#onIconPersonal" maxWidth="Infinity" contentDisplay="GRAPHIC_ONLY"/>
+                
+                <!-- Spacer -->
+                <Region VBox.vgrow="ALWAYS"/>
+                
+                <!-- 底部功能 -->
+                <Button fx:id="iconSettings" text="" styleClass="icon-bar-btn" 
+                        onAction="#onIconSettings" maxWidth="Infinity" contentDisplay="GRAPHIC_ONLY"/>
+                <Button fx:id="iconAdmin" text="" styleClass="icon-bar-btn" 
+                        onAction="#onIconAdmin" maxWidth="Infinity" managed="false" visible="false" contentDisplay="GRAPHIC_ONLY"/>
+                <Button fx:id="iconLogout" text="" styleClass="icon-bar-btn, icon-bar-btn-logout" 
+                        onAction="#onIconLogout" maxWidth="Infinity" contentDisplay="GRAPHIC_ONLY"/>
+            </VBox>
+            
+            <!-- 第二栏：Skill 列表 (~260px) -->
+            <VBox fx:id="skillSidebar" styleClass="wechat-skill-sidebar" prefWidth="260" minWidth="220" maxWidth="300">
+                <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
+                
+                <!-- 顶部标题 + 搜索 -->
+                <VBox fx:id="skillSidebarHeader" spacing="10">
+                    <padding><Insets top="16" right="12" bottom="16" left="12"/></padding>
+                    <Label fx:id="skillSidebarTitle" text="Skills" styleClass="skill-sidebar-title"/>
+                    <TextField fx:id="skillSearchField" promptText="搜索 Skill..." styleClass="skill-sidebar-search"/>
+                </VBox>
+                
+                <!-- Skill 列表滚动区 -->
+                <ScrollPane styleClass="skill-sidebar-scroll" fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="skillListContainer" spacing="0" styleClass="skill-list-container">
+                        <!-- Skill items will be added dynamically -->
+                        
+                        <!-- 空状态示例 -->
+                        <VBox fx:id="skillEmptyState" spacing="8" alignment="CENTER" 
+                              styleClass="skill-empty-state" managed="false" visible="false">
+                            <padding><Insets top="48" right="24" bottom="48" left="24"/></padding>
+                            <Label text="暂无 Skill" styleClass="skill-empty-title"/>
+                            <Label text="请从技能市场添加" styleClass="skill-empty-subtitle"/>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+            
+            <!-- 第三栏：聊天主区域 -->
+            <BorderPane fx:id="chatArea" styleClass="wechat-chat-area" HBox.hgrow="ALWAYS">
+                <!-- 动态加载 chat.fxml 或其他内容 -->
+                <center>
+                    <StackPane fx:id="contentArea" styleClass="chat-content-area">
+                        <VBox spacing="16" alignment="CENTER" styleClass="chat-welcome">
+                            <Label text="欢迎使用 Everything" styleClass="chat-welcome-title"/>
+                            <Label text="像发微信一样，点一下就开聊" styleClass="chat-welcome-subtitle"/>
+                            <VBox spacing="8" alignment="CENTER" styleClass="chat-recommend-card">
+                                <Label text="推荐动作" styleClass="chat-recommend-title"/>
+                                <HBox spacing="8" alignment="CENTER">
+                                    <Button text="查找资料" styleClass="chat-recommend-btn"
+                                            onAction="#onRecommendSearchInfo"/>
+                                    <Button text="阅读文件" styleClass="chat-recommend-btn"
+                                            onAction="#onRecommendReadFiles"/>
+                                </HBox>
+                                <HBox spacing="8" alignment="CENTER">
+                                    <Button text="创建待办" styleClass="chat-recommend-btn"
+                                            onAction="#onRecommendCreateTodo"/>
+                                    <Button text="设置提醒" styleClass="chat-recommend-btn"
+                                            onAction="#onRecommendSetReminder"/>
+                                </HBox>
+                                <HBox spacing="8" alignment="CENTER">
+                                    <Button text="HR 推进" styleClass="chat-recommend-btn"
+                                            onAction="#onRecommendHrExec"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                        <VBox fx:id="todoReminderBubble" managed="false" visible="false"
+                              spacing="8" styleClass="todo-reminder-bubble"
+                              StackPane.alignment="TOP_RIGHT">
+                            <StackPane.margin>
+                                <Insets top="16" right="16" bottom="0" left="0"/>
+                            </StackPane.margin>
+                            <Label fx:id="todoReminderLabel" text="" wrapText="true"
+                                   styleClass="todo-reminder-label"/>
+                            <HBox spacing="8" alignment="CENTER_RIGHT">
+                                <Button fx:id="todoReminderLaterBtn" text="稍后提醒"
+                                        styleClass="attachment-summary-action-btn"
+                                        onAction="#onTodoReminderLater"/>
+                                <Button fx:id="todoReminderDoneBtn" text="标记完成"
+                                        styleClass="btn-primary"
+                                        onAction="#onTodoReminderDone"/>
+                            </HBox>
+                        </VBox>
+                    </StackPane>
+                </center>
+            </BorderPane>
+        </HBox>
+    </center>
+
+</BorderPane>

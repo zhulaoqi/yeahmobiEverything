@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yeahmobi</groupId>
+        <artifactId>yeahmobi-everything</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>everything-client</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Everything Client</name>
+    <description>JavaFX desktop client: UI, controllers, FXML views</description>
+
+    <properties>
+        <!-- JavaFX 21 是最后一个兼容 JDK 17 的版本（class version 61），包含 macOS 兼容性修复 -->
+        <javafx.version>21.0.5</javafx.version>
+        <flexmark.version>0.64.8</flexmark.version>
+        <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+        <jpackage-maven-plugin.version>1.6.5</jpackage-maven-plugin.version>
+        <main.class>com.yeahmobi.everything.Launcher</main.class>
+        <!-- Mapped from os-maven-plugin classifier via profiles below -->
+        <javafx.platform>mac-aarch64</javafx.platform>
+    </properties>
+
+    <dependencies>
+        <!-- Internal: Server module -->
+        <dependency>
+            <groupId>com.yeahmobi</groupId>
+            <artifactId>everything-server</artifactId>
+        </dependency>
+
+        <!-- JavaFX: only resolve runtime for current platform -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier>
+        </dependency>
+
+        <!-- Flexmark (Markdown rendering) -->
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-all</artifactId>
+            <version>${flexmark.version}</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.1</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Maven JAR Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Shade Plugin: Fat JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${main.class}</mainClass>
+                                </transformer>
+                                <!-- 合并 META-INF/services 文件（JDBC 驱动自动发现） -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <!-- 合并 Spring 配置文件（如果将来使用） -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                            </transformers>
+                            <outputFile>${project.build.directory}/yeahmobi-everything-${project.version}-all.jar</outputFile>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Dependency Plugin: 复制依赖到 libs 供 jpackage 使用 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                            <!-- 排除同一 reactor 中的 server 模块，后面用 resources 插件单独复制 -->
+                            <excludeArtifactIds>everything-server</excludeArtifactIds>
+                            <!-- JavaFX 由下方 antrun 按当前平台精确复制，避免多平台混装 -->
+                            <excludeGroupIds>org.openjfx</excludeGroupIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Antrun: 复制 server JAR 和 client 主 JAR 到 libs 目录（jpackage 需要） -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-jars-to-libs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- 复制 client 主 JAR -->
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                                <!-- 复制 server JAR（从兄弟模块 target） -->
+                                <copy file="${project.basedir}/../everything-server/target/everything-server-${project.version}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                                <!-- 仅复制当前平台 JavaFX 运行时 JAR，避免类冲突 -->
+                                <copy file="${settings.localRepository}/org/openjfx/javafx-controls/${javafx.version}/javafx-controls-${javafx.version}-${javafx.platform}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                                <copy file="${settings.localRepository}/org/openjfx/javafx-fxml/${javafx.version}/javafx-fxml-${javafx.version}-${javafx.platform}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                                <copy file="${settings.localRepository}/org/openjfx/javafx-web/${javafx.version}/javafx-web-${javafx.version}-${javafx.platform}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                                <copy file="${settings.localRepository}/org/openjfx/javafx-media/${javafx.version}/javafx-media-${javafx.version}-${javafx.platform}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                                <copy file="${settings.localRepository}/org/openjfx/javafx-graphics/${javafx.version}/javafx-graphics-${javafx.version}-${javafx.platform}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                                <copy file="${settings.localRepository}/org/openjfx/javafx-base/${javafx.version}/javafx-base-${javafx.version}-${javafx.platform}.jar"
+                                      todir="${project.build.directory}/libs" failonerror="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- JavaFX Maven Plugin -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>${javafx-maven-plugin.version}</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- jpackage Maven Plugin: 生成原生安装包 (.dmg / .msi) -->
+            <plugin>
+                <groupId>org.panteleyev</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>${jpackage-maven-plugin.version}</version>
+                <configuration>
+                    <name>Yeahmobi Everything</name>
+                    <appVersion>${project.version}</appVersion>
+                    <vendor>Yeahmobi</vendor>
+                    <description>AI 驱动的智能工作助手</description>
+                    <mainClass>${main.class}</mainClass>
+                    <mainJar>${project.build.finalName}.jar</mainJar>
+                    <input>${project.build.directory}/libs</input>
+                    <destination>${project.build.directory}/dist</destination>
+                    <icon>${project.basedir}/src/main/resources/images/app-icon.icns</icon>
+                    <javaOptions>
+                        <option>-Dfile.encoding=UTF-8</option>
+                        <option>-Xmx512m</option>
+                    </javaOptions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>javafx-mac-aarch64</id>
+            <activation>
+                <property>
+                    <name>os.detected.classifier</name>
+                    <value>osx-aarch_64</value>
+                </property>
+            </activation>
+            <properties>
+                <javafx.platform>mac-aarch64</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>javafx-mac-x64</id>
+            <activation>
+                <property>
+                    <name>os.detected.classifier</name>
+                    <value>osx-x86_64</value>
+                </property>
+            </activation>
+            <properties>
+                <javafx.platform>mac</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>javafx-win-x64</id>
+            <activation>
+                <property>
+                    <name>os.detected.classifier</name>
+                    <value>windows-x86_64</value>
+                </property>
+            </activation>
+            <properties>
+                <javafx.platform>win</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>javafx-linux-x64</id>
+            <activation>
+                <property>
+                    <name>os.detected.classifier</name>
+                    <value>linux-x86_64</value>
+                </property>
+            </activation>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+            </properties>
+        </profile>
+    </profiles>
+</project>

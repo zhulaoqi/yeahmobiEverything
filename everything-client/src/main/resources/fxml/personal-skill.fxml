@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.yeahmobi.everything.ui.PersonalSkillController"
+      spacing="16">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="个人 Skill" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="导入技能包" styleClass="btn-secondary" onAction="#onImportPackage"/>
+    </HBox>
+    <Label text="创建属于你的技能包，提交后由管理员审核，审核通过后可进入技能库。" styleClass="section-subtitle"/>
+
+    <VBox spacing="10" styleClass="card">
+        <Label text="技能信息" styleClass="card-title"/>
+
+        <TextField fx:id="nameField" promptText="技能名称"
+                   styleClass="text-field" maxWidth="Infinity"/>
+
+        <TextField fx:id="categoryField" promptText="分类（例如：效率、写作、研发）"
+                   styleClass="text-field" maxWidth="Infinity"/>
+
+        <TextArea fx:id="descriptionArea" promptText="一句话描述你的技能价值"
+                  styleClass="text-area" wrapText="true" prefRowCount="3"/>
+
+        <TextArea fx:id="promptArea"
+                  promptText="Prompt 模板（必须包含 {{input}} 占位符）"
+                  styleClass="text-area" wrapText="true" prefRowCount="6"/>
+
+        <Label text="技能包规范：名称/描述/分类/Prompt 必填，Prompt 需包含 {{input}}。" styleClass="section-subtitle"/>
+
+        <Label fx:id="resultLabel" text="" managed="false" visible="false"/>
+
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="saveButton" text="保存草稿" styleClass="btn-secondary"
+                    onAction="#onSaveDraft"/>
+            <Button fx:id="submitButton" text="提交审核" styleClass="btn-primary"
+                    onAction="#onSubmitReview"/>
+        </HBox>
+    </VBox>
+
+    <VBox spacing="8">
+        <Label text="我的技能" styleClass="section-title"/>
+        <VBox fx:id="skillListContainer" spacing="8"/>
+    </VBox>
+</VBox>

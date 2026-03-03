@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.yeahmobi.everything.ui.CliScheduleController"
+      spacing="12">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Button fx:id="backBtn" text="返回待办" styleClass="chat-header-action" onAction="#onBack"/>
+        <Label text="CLI 定时任务" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="刷新" styleClass="chat-header-action" onAction="#onRefresh"/>
+    </HBox>
+    <Label fx:id="backendModeLabel" text="调度模式加载中..." styleClass="section-subtitle" wrapText="true"/>
+
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <TextField fx:id="nameField" promptText="任务名称" HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="triggerField" promptText="触发规则，如 every:30m" prefWidth="180"/>
+    </HBox>
+    <TextField fx:id="commandField" promptText="命令，例如 ls -la"/>
+    <Button text="创建任务" styleClass="btn-primary" onAction="#onCreate"/>
+
+    <Label fx:id="tipLabel" text="" styleClass="section-subtitle" wrapText="true"/>
+
+    <ListView fx:id="jobListView" VBox.vgrow="ALWAYS"/>
+</VBox>

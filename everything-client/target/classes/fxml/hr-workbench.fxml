@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.yeahmobi.everything.ui.HrWorkbenchController"
+      spacing="12">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Button fx:id="backBtn" text="返回待办" styleClass="chat-header-action" onAction="#onBack"/>
+        <Label text="HR 工作台" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <TextField fx:id="candidateField" promptText="候选人姓名" HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="positionField" promptText="岗位"/>
+    </HBox>
+
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Label text="阶段" styleClass="section-subtitle"/>
+        <ChoiceBox fx:id="stageChoice"/>
+        <Label text="风险" styleClass="section-subtitle"/>
+        <ChoiceBox fx:id="riskChoice"/>
+        <TextField fx:id="dueAtField" promptText="截止时间 yyyy-MM-dd HH:mm" HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <TextArea fx:id="nextActionArea" prefRowCount="5"
+              promptText="下一步动作（例如：今晚前完成面试安排并同步候选人）"/>
+
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Button fx:id="createCaseBtn" text="创建案例" styleClass="attachment-summary-action-btn"
+                onAction="#onCreateCase"/>
+        <Button fx:id="updateCaseBtn" text="更新案例" styleClass="attachment-summary-action-btn"
+                onAction="#onUpdateCase"/>
+        <Button fx:id="refreshCaseBtn" text="刷新案例" styleClass="chat-header-action"
+                onAction="#onRefreshCases"/>
+    </HBox>
+
+    <ListView fx:id="caseListView" prefHeight="180"/>
+
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Button fx:id="createTodoBtn" text="转为待办" styleClass="attachment-summary-action-btn"
+                onAction="#onCreateTodo"/>
+        <Button fx:id="sendToChatBtn" text="发送到聊天执行" styleClass="btn-primary"
+                onAction="#onSendToChat"/>
+    </HBox>
+
+    <Label fx:id="statusLabel" text="" styleClass="section-subtitle" wrapText="true"/>
+</VBox>
+

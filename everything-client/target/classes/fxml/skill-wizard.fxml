@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.yeahmobi.everything.ui.SkillWizardController"
+      spacing="0">
+
+    <!-- Page header with back button -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <padding><Insets top="24" right="24" bottom="16" left="24"/></padding>
+        <Button fx:id="backButton" text="← 返回" styleClass="btn-secondary"
+                onAction="#onBack"/>
+        <Label fx:id="wizardTitle" text="创建 Skill" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="stepIndicator" text="" styleClass="section-subtitle"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- Wizard content area - uses StackPane to switch between steps -->
+    <StackPane fx:id="wizardContent" VBox.vgrow="ALWAYS">
+        <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+        <!-- Step 1: Select Skill Kind (通用型 / 知识型) -->
+        <VBox fx:id="stepSelectKind" spacing="24" alignment="TOP_CENTER" managed="true" visible="true">
+            <padding><Insets top="40" right="60" bottom="40" left="60"/></padding>
+
+            <Label text="选择 Skill 类型" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+            <Label text="请选择要创建的 Skill 类型，不同类型有不同的创建流程。" styleClass="section-subtitle"/>
+
+            <HBox spacing="24" alignment="CENTER">
+                <padding><Insets top="20"/></padding>
+
+                <!-- General Skill card -->
+                <VBox fx:id="generalSkillCard" spacing="12" alignment="CENTER"
+                      style="-fx-padding: 24; -fx-border-color: #D0D7DE; -fx-border-width: 2; -fx-border-radius: 12; -fx-background-radius: 12; -fx-background-color: #FFFFFF; -fx-cursor: hand; -fx-pref-width: 260; -fx-pref-height: 200;"
+                      onMouseClicked="#onSelectGeneralSkill">
+                    <Label text="📝" style="-fx-font-size: 36px;"/>
+                    <Label text="通用型 Skill" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+                    <Label text="纯 Prompt 驱动，通过 Prompt 模板定义 Skill 行为" wrapText="true" alignment="CENTER"
+                           style="-fx-font-size: 13px; -fx-text-fill: #656D76; -fx-text-alignment: center;"/>
+                </VBox>
+
+                <!-- Knowledge Skill card -->
+                <VBox fx:id="knowledgeSkillCard" spacing="12" alignment="CENTER"
+                      style="-fx-padding: 24; -fx-border-color: #D0D7DE; -fx-border-width: 2; -fx-border-radius: 12; -fx-background-radius: 12; -fx-background-color: #FFFFFF; -fx-cursor: hand; -fx-pref-width: 260; -fx-pref-height: 200;"
+                      onMouseClicked="#onSelectKnowledgeSkill">
+                    <Label text="📚" style="-fx-font-size: 36px;"/>
+                    <Label text="知识型 Skill" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+                    <Label text="Prompt + 知识库 RAG，从知识库中检索内容增强回答" wrapText="true" alignment="CENTER"
+                           style="-fx-font-size: 13px; -fx-text-fill: #656D76; -fx-text-alignment: center;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Step: General Skill creation form -->
+        <ScrollPane fx:id="stepGeneralForm" fitToWidth="true" managed="false" visible="false" styleClass="scroll-pane">
+            <VBox spacing="16">
+                <padding><Insets top="0" right="40" bottom="24" left="40"/></padding>
+
+                <Label text="创建通用型 Skill" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+                <Label text="填写以下信息创建一个纯 Prompt 驱动的 Skill。" styleClass="section-subtitle"/>
+
+                <!-- Name -->
+                <VBox spacing="4">
+                    <Label fx:id="generalNameLabel" text="名称 *" styleClass="card-title"/>
+                    <TextField fx:id="generalNameField" promptText="请输入 Skill 名称" styleClass="text-input"/>
+                </VBox>
+
+                <!-- Description -->
+                <VBox spacing="4">
+                    <Label fx:id="generalDescLabel" text="描述 *" styleClass="card-title"/>
+                    <TextArea fx:id="generalDescField" promptText="请输入 Skill 描述" styleClass="text-area"
+                              wrapText="true" prefRowCount="3"/>
+                </VBox>
+
+                <!-- Category -->
+                <VBox spacing="4">
+                    <Label fx:id="generalCategoryLabel" text="分类 *" styleClass="card-title"/>
+                    <ComboBox fx:id="generalCategoryCombo" promptText="选择分类" editable="true" maxWidth="Infinity"/>
+                </VBox>
+
+                <!-- Icon -->
+                <VBox spacing="4">
+                    <Label text="图标" styleClass="card-title"/>
+                    <TextField fx:id="generalIconField" promptText="图标路径或 URL（可选）" styleClass="text-input"/>
+                </VBox>
+
+                <!-- Skill Type (GENERAL / INTERNAL) -->
+                <VBox spacing="4">
+                    <Label text="Skill 类型" styleClass="card-title"/>
+                    <HBox spacing="16">
+                        <fx:define>
+                            <ToggleGroup fx:id="generalTypeGroup"/>
+                        </fx:define>
+                        <RadioButton fx:id="generalTypeGeneral" text="通用 Skill" toggleGroup="$generalTypeGroup" selected="true"/>
+                        <RadioButton fx:id="generalTypeInternal" text="内部 Skill（公司专属）" toggleGroup="$generalTypeGroup"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Execution Mode -->
+                <VBox spacing="4">
+                    <Label text="执行模式" styleClass="card-title"/>
+                    <HBox spacing="16">
+                        <fx:define>
+                            <ToggleGroup fx:id="generalExecutionGroup"/>
+                        </fx:define>
+                        <RadioButton fx:id="generalExecSingle" text="单智能体" toggleGroup="$generalExecutionGroup" selected="true"/>
+                        <RadioButton fx:id="generalExecMulti" text="多智能体（计划/执行/审阅）" toggleGroup="$generalExecutionGroup"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Prompt Template -->
+                <VBox spacing="4">
+                    <Label text="Prompt 模板" styleClass="card-title"/>
+                    <TextArea fx:id="generalPromptField" promptText="请输入 Prompt 模板，使用 {{user_input}} 作为用户输入占位符"
+                              styleClass="text-area" wrapText="true" prefRowCount="6"/>
+                </VBox>
+
+                <!-- Prompt Preview -->
+                <VBox spacing="4">
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="模板预览" styleClass="card-title"/>
+                        <TextField fx:id="generalPreviewInput" promptText="输入示例文本预览效果" styleClass="text-input"
+                                   HBox.hgrow="ALWAYS"/>
+                        <Button text="预览" styleClass="btn-secondary" onAction="#onPreviewGeneralPrompt"/>
+                    </HBox>
+                    <Label fx:id="generalPreviewResult" text="" wrapText="true"
+                           style="-fx-padding: 12; -fx-background-color: #F6F8FA; -fx-background-radius: 6; -fx-font-size: 13px; -fx-text-fill: #1F2328;"
+                           managed="false" visible="false"/>
+                </VBox>
+
+                <!-- Validation error -->
+                <Label fx:id="generalValidationError" text="" styleClass="login-error-label"
+                       managed="false" visible="false"/>
+
+                <!-- Action buttons -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <padding><Insets top="8"/></padding>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="取消" styleClass="btn-secondary" onAction="#onBack"/>
+                    <Button fx:id="generalSubmitButton" text="创建 Skill" styleClass="btn-primary"
+                            onAction="#onSubmitGeneralSkill"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+
+        <!-- Knowledge Skill Step 1: Upload documents / Manual input -->
+        <ScrollPane fx:id="stepKnowledgeUpload" fitToWidth="true" managed="false" visible="false" styleClass="scroll-pane">
+            <VBox spacing="16">
+                <padding><Insets top="0" right="40" bottom="24" left="40"/></padding>
+
+                <Label text="第 1 步：添加知识内容" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+                <Label text="上传知识库文档或手动输入知识内容。" styleClass="section-subtitle"/>
+
+                <!-- Upload area -->
+                <VBox spacing="8">
+                    <Label text="上传文档" styleClass="card-title"/>
+                    <VBox fx:id="dropZone" spacing="8" alignment="CENTER"
+                          style="-fx-padding: 32; -fx-border-color: #D0D7DE; -fx-border-width: 2; -fx-border-style: dashed; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #F6F8FA; -fx-cursor: hand;"
+                          onMouseClicked="#onBrowseFiles" onDragOver="#onDragOver" onDragDropped="#onDragDropped" onDragExited="#onDragExited">
+                        <Label text="📁" style="-fx-font-size: 32px;"/>
+                        <Label text="拖拽文件到此处，或点击选择文件" style="-fx-font-size: 14px; -fx-text-fill: #656D76;"/>
+                        <Label text="支持 PDF、Markdown、TXT 格式" style="-fx-font-size: 12px; -fx-text-fill: #656D76;"/>
+                    </VBox>
+
+                    <!-- Uploaded files list with progress -->
+                    <VBox fx:id="uploadedFilesList" spacing="6"/>
+                </VBox>
+
+                <Separator/>
+
+                <!-- Manual input area -->
+                <VBox spacing="8">
+                    <Label text="手动输入知识内容" styleClass="card-title"/>
+                    <Label text="直接输入知识内容（如 FAQ、流程手册等），支持富文本格式。" styleClass="section-subtitle"/>
+                    <TextArea fx:id="manualContentField" promptText="在此输入知识内容..."
+                              styleClass="text-area" wrapText="true" prefRowCount="10"/>
+                </VBox>
+
+                <!-- Navigation buttons -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <padding><Insets top="8"/></padding>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="上一步" styleClass="btn-secondary" onAction="#onKnowledgeBackToKindSelect"/>
+                    <Button fx:id="knowledgeUploadNextButton" text="下一步" styleClass="btn-primary"
+                            onAction="#onKnowledgeUploadNext"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+
+        <!-- Knowledge Skill Step 2: Configure basic info -->
+        <ScrollPane fx:id="stepKnowledgeInfo" fitToWidth="true" managed="false" visible="false" styleClass="scroll-pane">
+            <VBox spacing="16">
+                <padding><Insets top="0" right="40" bottom="24" left="40"/></padding>
+
+                <Label text="第 2 步：配置基本信息" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+                <Label text="填写 Skill 的名称、描述、分类等基本信息。" styleClass="section-subtitle"/>
+
+                <!-- Name -->
+                <VBox spacing="4">
+                    <Label fx:id="knowledgeNameLabel" text="名称 *" styleClass="card-title"/>
+                    <TextField fx:id="knowledgeNameField" promptText="请输入 Skill 名称" styleClass="text-input"/>
+                </VBox>
+
+                <!-- Description -->
+                <VBox spacing="4">
+                    <Label fx:id="knowledgeDescLabel" text="描述 *" styleClass="card-title"/>
+                    <TextArea fx:id="knowledgeDescField" promptText="请输入 Skill 描述" styleClass="text-area"
+                              wrapText="true" prefRowCount="3"/>
+                </VBox>
+
+                <!-- Category -->
+                <VBox spacing="4">
+                    <Label fx:id="knowledgeCategoryLabel" text="分类 *" styleClass="card-title"/>
+                    <ComboBox fx:id="knowledgeCategoryCombo" promptText="选择分类" editable="true" maxWidth="Infinity"/>
+                </VBox>
+
+                <!-- Icon -->
+                <VBox spacing="4">
+                    <Label text="图标" styleClass="card-title"/>
+                    <TextField fx:id="knowledgeIconField" promptText="图标路径或 URL（可选）" styleClass="text-input"/>
+                </VBox>
+
+                <!-- Skill Type (GENERAL / INTERNAL) -->
+                <VBox spacing="4">
+                    <Label text="Skill 类型" styleClass="card-title"/>
+                    <HBox spacing="16">
+                        <fx:define>
+                            <ToggleGroup fx:id="knowledgeTypeGroup"/>
+                        </fx:define>
+                        <RadioButton fx:id="knowledgeTypeGeneral" text="通用 Skill" toggleGroup="$knowledgeTypeGroup" selected="true"/>
+                        <RadioButton fx:id="knowledgeTypeInternal" text="内部 Skill（公司专属）" toggleGroup="$knowledgeTypeGroup"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Execution Mode -->
+                <VBox spacing="4">
+                    <Label text="执行模式" styleClass="card-title"/>
+                    <HBox spacing="16">
+                        <fx:define>
+                            <ToggleGroup fx:id="knowledgeExecutionGroup"/>
+                        </fx:define>
+                        <RadioButton fx:id="knowledgeExecSingle" text="单智能体" toggleGroup="$knowledgeExecutionGroup" selected="true"/>
+                        <RadioButton fx:id="knowledgeExecMulti" text="多智能体（计划/执行/审阅）" toggleGroup="$knowledgeExecutionGroup"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Validation error -->
+                <Label fx:id="knowledgeInfoValidationError" text="" styleClass="login-error-label"
+                       managed="false" visible="false"/>
+
+                <!-- Navigation buttons -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <padding><Insets top="8"/></padding>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="上一步" styleClass="btn-secondary" onAction="#onKnowledgeInfoBack"/>
+                    <Button text="下一步" styleClass="btn-primary" onAction="#onKnowledgeInfoNext"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+
+        <!-- Knowledge Skill Step 3: Configure Prompt template -->
+        <ScrollPane fx:id="stepKnowledgePrompt" fitToWidth="true" managed="false" visible="false" styleClass="scroll-pane">
+            <VBox spacing="16">
+                <padding><Insets top="0" right="40" bottom="24" left="40"/></padding>
+
+                <Label text="第 3 步：配置 Prompt 模板" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+                <Label text="定义 Skill 与大模型交互时使用的提示词模板。" styleClass="section-subtitle"/>
+
+                <!-- Prompt Template -->
+                <VBox spacing="4">
+                    <Label text="Prompt 模板" styleClass="card-title"/>
+                    <TextArea fx:id="knowledgePromptField"
+                              promptText="请输入 Prompt 模板，使用 {{user_input}} 作为用户输入占位符"
+                              styleClass="text-area" wrapText="true" prefRowCount="8"/>
+                </VBox>
+
+                <!-- Prompt Preview -->
+                <VBox spacing="4">
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="模板预览" styleClass="card-title"/>
+                        <TextField fx:id="knowledgePreviewInput" promptText="输入示例文本预览效果" styleClass="text-input"
+                                   HBox.hgrow="ALWAYS"/>
+                        <Button text="预览" styleClass="btn-secondary" onAction="#onPreviewKnowledgePrompt"/>
+                    </HBox>
+                    <Label fx:id="knowledgePreviewResult" text="" wrapText="true"
+                           style="-fx-padding: 12; -fx-background-color: #F6F8FA; -fx-background-radius: 6; -fx-font-size: 13px; -fx-text-fill: #1F2328;"
+                           managed="false" visible="false"/>
+                </VBox>
+
+                <!-- Navigation buttons -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <padding><Insets top="8"/></padding>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="上一步" styleClass="btn-secondary" onAction="#onKnowledgePromptBack"/>
+                    <Button text="下一步：预览" styleClass="btn-primary" onAction="#onKnowledgePromptNext"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+
+        <!-- Knowledge Skill Step 4: Preview & Publish -->
+        <ScrollPane fx:id="stepKnowledgePreview" fitToWidth="true" managed="false" visible="false" styleClass="scroll-pane">
+            <VBox spacing="16">
+                <padding><Insets top="0" right="40" bottom="24" left="40"/></padding>
+
+                <Label text="第 4 步：预览并发布" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1F2328;"/>
+                <Label text="确认以下信息无误后，点击发布创建知识型 Skill。" styleClass="section-subtitle"/>
+
+                <!-- Preview card -->
+                <VBox spacing="12" style="-fx-padding: 20; -fx-border-color: #D0D7DE; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #F6F8FA;">
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="名称：" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="previewName" text=""/>
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="描述：" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="previewDesc" text="" wrapText="true"/>
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="分类：" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="previewCategory" text=""/>
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="类型：" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="previewType" text=""/>
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="知识来源：" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="previewKnowledgeSummary" text="" wrapText="true"/>
+                    </HBox>
+                    <VBox spacing="4">
+                        <Label text="Prompt 模板：" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="previewPrompt" text="" wrapText="true"
+                               style="-fx-padding: 8; -fx-background-color: #FFFFFF; -fx-background-radius: 4; -fx-font-size: 13px;"/>
+                    </VBox>
+                </VBox>
+
+                <!-- Validation error -->
+                <Label fx:id="knowledgePublishError" text="" styleClass="login-error-label"
+                       managed="false" visible="false"/>
+
+                <!-- Publishing progress -->
+                <ProgressIndicator fx:id="publishProgress" managed="false" visible="false" maxWidth="40" maxHeight="40"/>
+
+                <!-- Navigation buttons -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <padding><Insets top="8"/></padding>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="上一步" styleClass="btn-secondary" onAction="#onKnowledgePreviewBack"/>
+                    <Button fx:id="publishButton" text="发布 Skill" styleClass="btn-primary"
+                            onAction="#onPublishKnowledgeSkill"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+
+    </StackPane>
+</VBox>

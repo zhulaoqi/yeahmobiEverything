@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1dcc852e-82b6-4c05-8ad3-b005b585286a" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="customMavenHome" value="$PROJECT_DIR$/../../../env/maven/apache-maven-3.8.6" />
+        <option name="localRepository" value="$PROJECT_DIR$/../../../repository" />
+        <option name="mavenHomeTypeForPersistence" value="CUSTOM" />
+        <option name="userSettingsFile" value="$PROJECT_DIR$/../../../env/maven/apache-maven-3.8.6/conf/settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="MavenRunner">
+    <option name="jreName" value="homebrew-17" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="39HKdBAg5PQBP52upbn1iOEHe1t" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.AgentScopeServer.executor": "Debug",
+    "Application.Launcher.executor": "Debug",
+    "Maven.everything-client [clean].executor": "Run",
+    "Maven.everything-client [package].executor": "Run",
+    "Maven.everything-server [clean].executor": "Run",
+    "Maven.yeahmobi-everything [clean].executor": "Run",
+    "Maven.yeahmobi-everything [compile].executor": "Run",
+    "Maven.yeahmobi-everything [install].executor": "Run",
+    "Maven.yeahmobi-everything [package].executor": "Run",
+    "Maven.yeahmobi-everything [validate].executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/zhujinqi/Documents/javacode/learn/yeahmobiEverything/everything-server/src/main/resources",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.1055966",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.runner",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/everything-server/src/main/resources" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.AgentScopeServer">
+    <configuration name="AgentScopeServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.yeahmobi.everything.agentscope.AgentScopeServer" />
+      <module name="everything-agentscope-server" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.yeahmobi.everything.agentscope.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Launcher" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.yeahmobi.everything.Launcher" />
+      <module name="everything-client" />
+      <option name="VM_PARAMETERS" value="-Dfile.encoding=UTF-8 -Xmx512m" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.yeahmobi.everything.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.AgentScopeServer" />
+      <item itemvalue="Application.Launcher" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.AgentScopeServer" />
+        <item itemvalue="Application.Launcher" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fdfe4dae3a2d-intellij.indexing.shared.core-IU-243.21565.193" />
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-IU-243.21565.193" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1dcc852e-82b6-4c05-8ad3-b005b585286a" name="Changes" comment="" />
+      <created>1770347641357</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1770347641357</updated>
+      <workItem from="1770347642550" duration="12947000" />
+      <workItem from="1770455849314" duration="968000" />
+      <workItem from="1770456830094" duration="21847000" />
+      <workItem from="1770605589173" duration="21174000" />
+      <workItem from="1770706242704" duration="41178000" />
+      <workItem from="1770953653113" duration="3534000" />
+      <workItem from="1771918557085" duration="4503000" />
+      <workItem from="1772002926793" duration="1486000" />
+      <workItem from="1772004703290" duration="474000" />
+      <workItem from="1772005436374" duration="5138000" />
+      <workItem from="1772014908346" duration="936000" />
+      <workItem from="1772075899822" duration="1445000" />
+      <workItem from="1772084731959" duration="2258000" />
+      <workItem from="1772244300569" duration="6564000" />
+      <workItem from="1772262676825" duration="6000" />
+      <workItem from="1772526189411" duration="108000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

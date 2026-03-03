@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.yeahmobi.everything.ui.TodoPanelController"
+      spacing="12"
+      styleClass="todo-panel-root">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="我的待办" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="HR 工作台" styleClass="chat-header-action" onAction="#onOpenHrWorkbench"/>
+        <Button text="CLI 定时任务" styleClass="chat-header-action" onAction="#onOpenCliSchedule"/>
+        <Button fx:id="refreshBtn" text="刷新" styleClass="chat-header-action" onAction="#onRefresh"/>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label text="筛选" styleClass="section-subtitle"/>
+        <ChoiceBox fx:id="statusChoice"/>
+        <Label text="排序" styleClass="section-subtitle"/>
+        <ChoiceBox fx:id="sortChoice"/>
+    </HBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <TextField fx:id="quickTitleField" promptText="一句话创建待办（例如：明天10点交周报）" HBox.hgrow="ALWAYS"/>
+        <DatePicker fx:id="quickDatePicker"/>
+        <ChoiceBox fx:id="quickTimeChoice" prefWidth="94"/>
+        <ChoiceBox fx:id="quickLeadChoice" prefWidth="86"/>
+        <Button text="快速创建" styleClass="chat-header-action" onAction="#onQuickCreate"/>
+    </HBox>
+
+    <Label fx:id="emptyLabel" text="暂无待办，去聊天里创建一个任务吧" styleClass="section-subtitle"
+           managed="false" visible="false"/>
+
+    <ListView fx:id="todoListView" VBox.vgrow="ALWAYS"/>
+</VBox>

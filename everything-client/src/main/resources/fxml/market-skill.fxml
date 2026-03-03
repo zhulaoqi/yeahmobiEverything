@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.yeahmobi.everything.ui.MarketSkillController"
+      spacing="16">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <Label text="技能市场" styleClass="section-title"/>
+    <Label text="浏览公开技能并一键添加到你的个人技能库。" styleClass="section-subtitle"/>
+
+    <TextField fx:id="searchField" promptText="搜索技能..."
+               styleClass="search-field" maxWidth="Infinity"
+               onKeyReleased="#onSearchChanged"/>
+
+    <Label fx:id="resultLabel" text="" managed="false" visible="false"/>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <content>
+            <VBox fx:id="marketListContainer" spacing="8"/>
+        </content>
+    </ScrollPane>
+</VBox>

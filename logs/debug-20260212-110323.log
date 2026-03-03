@@ -1,0 +1,68 @@
+2月 12, 2026 11:03:36 上午 com.sun.javafx.application.PlatformImpl startup
+警告: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @18ae30ae'
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Configuration loaded.
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Local SQLite database initialized at: /Users/zhujinqi/.yeahmobi-everything/data.db
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.repository.mysql.MySQLDatabaseManager initialize
+信息: MySQL JDBC driver loaded successfully
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.App initializeInfrastructure
+信息: MySQL database connected: jdbc:mysql://localhost:3306/yeahmobi_everything?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useUnicode=true
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.repository.cache.RedisManager <init>
+信息: RedisManager initialized: localhost:6379/0
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Redis connected: localhost:6379
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.App initializeServices
+信息: All services initialized.
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.App setupMacOSDock
+信息: macOS Taskbar/Dock integration initialized.
+2月 12, 2026 11:03:37 上午 com.yeahmobi.everything.App setupMacOSDock
+信息: macOS Dock behavior configured.
+2月 12, 2026 11:03:38 上午 com.yeahmobi.everything.App onLoginSuccess
+信息: User logged in: Kinch(朱金奇) (feishu)
+2026-02-12 11:03:47.704 java[10852:38150594] error messaging the mach port for IMKCFRunLoopWakeUpReliable
+2月 12, 2026 11:04:19 上午 com.yeahmobi.everything.skill.SkillLocalizationService localizeToZhCn
+警告: Skill localization failed for: aa034c37-3aff-3766-a6c9-cdbb508855e7
+com.yeahmobi.everything.common.NetworkException: Network error during POST request to https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions - request timed out
+	at com.yeahmobi.everything.common.HttpClientUtil.post(HttpClientUtil.java:136)
+	at com.yeahmobi.everything.skill.SkillLocalizationService.localizeToZhCn(SkillLocalizationService.java:79)
+	at com.yeahmobi.everything.skill.AnthropicSkillImporter.importFromPathDetailed(AnthropicSkillImporter.java:127)
+	at com.yeahmobi.everything.admin.AdminServiceImpl.importSkillsFromPathDetailed(AdminServiceImpl.java:345)
+	at com.yeahmobi.everything.ui.AdminController.lambda$onImportAnthropicSkills$0(AdminController.java:166)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:373)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1182)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1655)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1622)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:165)
+Caused by: java.net.http.HttpTimeoutException: request timed out
+	at java.net.http/jdk.internal.net.http.HttpClientImpl.send(HttpClientImpl.java:898)
+	at java.net.http/jdk.internal.net.http.HttpClientFacade.send(HttpClientFacade.java:133)
+	at com.yeahmobi.everything.common.HttpClientUtil.post(HttpClientUtil.java:120)
+	... 11 more
+
+2月 12, 2026 11:04:44 上午 com.yeahmobi.everything.skill.SkillLocalizationService localizeToZhCn
+警告: Skill localization failed for: 2a501103-f123-3611-a0b4-b26a7fe69ee1
+com.yeahmobi.everything.common.NetworkException: Network error during POST request to https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions - request timed out
+	at com.yeahmobi.everything.common.HttpClientUtil.post(HttpClientUtil.java:136)
+	at com.yeahmobi.everything.skill.SkillLocalizationService.localizeToZhCn(SkillLocalizationService.java:79)
+	at com.yeahmobi.everything.skill.AnthropicSkillImporter.importFromPathDetailed(AnthropicSkillImporter.java:127)
+	at com.yeahmobi.everything.admin.AdminServiceImpl.importSkillsFromPathDetailed(AdminServiceImpl.java:345)
+	at com.yeahmobi.everything.ui.AdminController.lambda$onImportAnthropicSkills$0(AdminController.java:166)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:373)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1182)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1655)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1622)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:165)
+Caused by: java.net.http.HttpTimeoutException: request timed out
+	at java.net.http/jdk.internal.net.http.HttpClientImpl.send(HttpClientImpl.java:898)
+	at java.net.http/jdk.internal.net.http.HttpClientFacade.send(HttpClientFacade.java:133)
+	at com.yeahmobi.everything.common.HttpClientUtil.post(HttpClientUtil.java:120)
+	... 11 more
+

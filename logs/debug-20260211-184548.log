@@ -1,0 +1,26 @@
+2月 11, 2026 6:46:07 下午 com.sun.javafx.application.PlatformImpl startup
+警告: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @18ae30ae'
+2月 11, 2026 6:46:08 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Configuration loaded.
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+2月 11, 2026 6:46:08 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Local SQLite database initialized at: /Users/zhujinqi/.yeahmobi-everything/data.db
+2月 11, 2026 6:46:08 下午 com.yeahmobi.everything.repository.mysql.MySQLDatabaseManager initialize
+信息: MySQL JDBC driver loaded successfully
+2月 11, 2026 6:46:08 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: MySQL database connected: jdbc:mysql://localhost:3306/yeahmobi_everything?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useUnicode=true
+2月 11, 2026 6:46:09 下午 com.yeahmobi.everything.repository.cache.RedisManager <init>
+信息: RedisManager initialized: localhost:6379/0
+2月 11, 2026 6:46:09 下午 com.yeahmobi.everything.App initializeInfrastructure
+信息: Redis connected: localhost:6379
+2月 11, 2026 6:46:09 下午 com.yeahmobi.everything.App initializeServices
+信息: All services initialized.
+2月 11, 2026 6:46:09 下午 com.yeahmobi.everything.App setupMacOSDock
+信息: macOS Taskbar/Dock integration initialized.
+2月 11, 2026 6:46:09 下午 com.yeahmobi.everything.App setupMacOSDock
+信息: macOS Dock behavior configured.
+2月 11, 2026 6:46:10 下午 com.yeahmobi.everything.App onLoginSuccess
+信息: User logged in: Kinch(朱金奇) (feishu)
+2026-02-11 18:46:28.715 java[96720:37895225] error messaging the mach port for IMKCFRunLoopWakeUpReliable
