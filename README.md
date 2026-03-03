@@ -1,142 +1,195 @@
 # Yeahmobi Everything
 
-> 面向公司全体员工的 AI 桌面应用 —— 基于 Skill 的自然语言交互平台
+[![Java](https://img.shields.io/badge/Java-17+-blue)](#)
+[![Build](https://img.shields.io/badge/Build-Maven-2ea44f)](#)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-lightgrey)](#)
 
-## 项目简介
+面向企业内部场景的 AI 桌面工作台。  
+通过 `Skill + Chat + Knowledge + Agent` 组合，帮助团队把日常任务从“问答”走向“可执行”。
 
-Yeahmobi Everything 是一款跨平台（Windows / macOS）AI 桌面应用。用户可以根据自身岗位需求选择不同的 Skill（技能），通过自然语言与大模型交互来完成翻译、写作、编程、数据分析等工作任务。
+---
 
-核心特性：
-- Skill 集合展示、搜索、分类筛选、收藏、最近使用
-- 基于大模型的自然语言对话，支持上下文连续对话
-- 知识库 RAG：管理员可为 Skill 绑定知识库文件（PDF/MD/TXT），对话时自动注入知识上下文
-- 双模式登录：邮箱密码 + 飞书 OAuth 2.0
-- 邮箱验证码注册（SMTP 真实发送）
-- 管理端：Skill 创建向导、知识库管理、反馈处理
-- 个人 Skill：用户私有创建、导出技能包、提交管理员审核
-- 技能市场：公开技能一键加入个人技能库
-- 审核通过后同步到公共技能库（可被全量用户使用）
-- AgentScope Server：为技能树与智能体运行提供可扩展服务端
-- 浅色/深色主题切换
-- 系统托盘集成（Windows 最小化到托盘，macOS Dock 适配）
+## 目录
 
-## 技术架构
+- [项目概览](#项目概览)
+- [功能特性](#功能特性)
+- [架构与模块](#架构与模块)
+- [可点击架构图](#可点击架构图)
+- [技术栈](#技术栈)
+- [快速开始](#快速开始)
+- [配置说明](#配置说明)
+- [运行与构建](#运行与构建)
+- [测试](#测试)
+- [常见问题](#常见问题)
+- [文档索引](#文档索引)
+- [License](#license)
 
-### 多模块结构
+---
 
-项目采用 Maven 多模块结构，服务端和客户端独立打包：
+## 项目概览
 
-```
-yeahmobi-everything/                  (Parent POM)
-├── pom.xml                            公共依赖管理
-├── everything-server/                 服务端模块
-│   ├── pom.xml
-│   └── src/main/java/.../
-│       ├── auth/                      认证（邮箱登录、飞书 OAuth、SMTP 邮件）
-│       ├── chat/                      对话（LLM API 交互）
-│       ├── skill/                     Skill 管理
-│       ├── admin/                     管理端
-│       ├── knowledge/                 知识库
-│       ├── feedback/                  反馈
-│       ├── notification/              飞书通知
-│       ├── personalskill/             个人 Skill（私有 + 审核）
-│       ├── common/                    公共工具（Config、HttpClient）
-│       └── repository/               数据访问（SQLite / MySQL / Redis）
-├── everything-agentscope-server/      AgentScope Server
-│   ├── pom.xml
-│   └── src/main/java/.../
-│       └── agentscope/                AgentScope 执行服务
-├── everything-client/                 客户端模块
-│   ├── pom.xml
-│   └── src/main/java/.../
-│       ├── App.java                   JavaFX 应用入口
-│       ├── Launcher.java              Fat JAR 启动入口
-│       └── ui/                        JavaFX 控制器
-│   └── src/main/resources/
-│       ├── fxml/                      FXML 布局
-│       ├── css/                       主题样式
-│       └── images/                    图标资源
-├── .github/workflows/build.yml        CI/CD 自动构建
-├── README.md
-├── PRODUCT.md                         产品价值文档
-└── TESTING.md                         测试文档
-```
+`Yeahmobi Everything` 是一个 Maven 多模块 Java 项目，运行形态为：
 
-| 模块 | 职责 | 产物 |
-|------|------|------|
-| **everything-server** | 认证、邮件、数据库、缓存、业务逻辑 | `everything-server-1.0.0.jar` |
-| **everything-client** | JavaFX UI、控制器、FXML/CSS | `everything-client-1.0.0.jar` + Fat JAR + .dmg/.msi |
-| **everything-agentscope-server** | AgentScope Skill 执行服务 | `everything-agentscope-server-1.0.0.jar` |
+- 桌面端主应用：`everything-client`（JavaFX）
+- 业务能力模块：`everything-server`（认证、技能、知识库、聊天、数据访问）
+- 可选 Agent 服务：`everything-agentscope-server`（HTTP API，多智能体执行）
 
-### 架构概览
+> 说明：本项目不是传统前后端分离 Web 架构，而是“桌面应用 + 内嵌服务 + 可选独立 Agent 服务”。
 
-```
-┌─────────────────────────────────────────────────────────┐
-│           everything-client (JavaFX Desktop App)         │
-├──────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────┐  │
-│  │             UI 层 (JavaFX FXML + CSS)              │  │
-│  │  AuthController │ MainController │ ChatController  │  │
-│  │  SkillController │ AdminController │ ...           │  │
-│  └────────────────────────────────────────────────────┘  │
-│                           ↓                              │
-├──────────────────────────────────────────────────────────┤
-│           everything-server (Backend Services)           │
-├──────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────┐  │
-│  │           服务层 (Business Logic)                   │  │
-│  │  AuthService │ SkillService │ ChatService          │  │
-│  │  EmailService │ AdminService │ KnowledgeBaseService│  │
-│  └────────────────────────────────────────────────────┘  │
-│                           ↓                              │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │           数据访问层 (Repository)                    │  │
-│  │  SQLite (本地) │ MySQL (后端) │ Redis (缓存)       │  │
-│  └────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────┘
-                           ↓
-      ┌────────────────────┼────────────────────┐
-      ↓                    ↓                    ↓
- ┌──────────┐        ┌──────────┐         ┌──────────┐
- │ LLM API  │        │  飞书    │         │  SMTP    │
- │ (大模型) │        │ OAuth +  │         │ 邮件服务 │
- │          │        │ Webhook  │         │          │
- └──────────┘        └──────────┘         └──────────┘
+## 功能特性
+
+- 认证体系：邮箱注册/登录、飞书 OAuth 登录
+- Skill 平台：分类、搜索、收藏、最近使用、个人 Skill、审核流、技能市场
+- 对话能力：多轮上下文、Prompt 模板化
+- 知识库能力：Skill 绑定知识文件，问答时自动注入上下文
+- 通知能力：飞书应用机器人消息、SMTP 验证码邮件
+- 执行能力：本机 CLI Gateway、任务跟进（Work Followup）
+- 扩展能力：AgentScope 工具编排（Web 检索、MCP 桥接、Docx 等）
+
+## 架构与模块
+
+### 模块职责
+
+| 模块 | 职责 | 运行方式 |
+|---|---|---|
+| `everything-client` | JavaFX UI、应用入口、页面控制器 | Fat JAR / 原生安装包 |
+| `everything-server` | 业务核心：Auth、Skill、Chat、Knowledge、Repository | 作为依赖被客户端调用 |
+| `everything-agentscope-server` | AgentScope HTTP 接口、多智能体执行 | 可独立启动 |
+
+### 仓库结构
+
+```text
+yeahmobiEverything/
+├── pom.xml
+├── everything-client/
+├── everything-server/
+├── everything-agentscope-server/
+├── TESTING.md
+├── PRODUCT.md
+└── README.md
 ```
 
-### 技术栈
+## 可点击架构图
 
-| 类别 | 技术 | 版本 |
-|------|------|------|
-| 语言 | Java | 17+ |
-| UI 框架 | JavaFX | 21.0.5 |
-| 构建工具 | Maven (多模块) | 3.x (Maven Wrapper) |
-| 本地数据库 | SQLite | 3.45.1.0 |
-| 后端数据库 | MySQL | 8.x |
-| 缓存 | Redis | 6.x+ (Jedis 5.1.0) |
-| 邮件 | Jakarta Mail (Angus) | 2.0.3 |
-| JSON | Gson | 2.10.1 |
-| Markdown 渲染 | flexmark-java | 0.64.8 |
-| 打包 | jpackage | JDK 17 内置 |
-| 测试 | JUnit 5 + jqwik + Mockito | 5.10.2 / 1.8.3 / 5.10.0 |
-| 智能体 | AgentScope Java | 1.0.8 |
+> 说明：以下图使用 Mermaid，节点可点击跳转到对应目录或文档（在 GitHub 页面直接点击节点）。
+
+### 1) 系统上下文图
+
+```mermaid
+flowchart LR
+    USER[User]
+    CLIENT[everything-client<br/>Desktop UI]
+    SERVER[everything-server<br/>Business Services]
+    AGENT[everything-agentscope-server<br/>Optional HTTP Service]
+    MYSQL[(MySQL)]
+    SQLITE[(SQLite)]
+    REDIS[(Redis)]
+    FEISHU[Feishu]
+    SMTP[SMTP]
+    LLM[LLM API]
+
+    USER --> CLIENT
+    CLIENT --> SERVER
+    CLIENT -. optional .-> AGENT
+    SERVER --> MYSQL
+    SERVER --> SQLITE
+    SERVER -. optional .-> REDIS
+    SERVER --> FEISHU
+    SERVER --> SMTP
+    SERVER --> LLM
+    AGENT --> LLM
+
+    click CLIENT "./everything-client" "打开客户端模块"
+    click SERVER "./everything-server" "打开服务模块"
+    click AGENT "./everything-agentscope-server" "打开 AgentScope 服务模块"
+    click MYSQL "./everything-server/src/main/resources/sql/init-mysql.sql" "查看 MySQL 初始化脚本"
+    click LLM "./everything-server/src/main/resources/application_tmp.properties" "查看 LLM 相关配置模板"
+```
+
+### 2) 模块依赖图
+
+```mermaid
+flowchart TD
+    ROOT[pom.xml<br/>Parent]
+    C[everything-client]
+    S[everything-server]
+    A[everything-agentscope-server]
+    T[TESTING.md]
+    P[PRODUCT.md]
+    D[DEBUG.md]
+
+    ROOT --> C
+    ROOT --> S
+    ROOT --> A
+    ROOT --> T
+    ROOT --> P
+    ROOT --> D
+    C --> S
+
+    click ROOT "./pom.xml" "查看父 POM"
+    click C "./everything-client" "进入 client"
+    click S "./everything-server" "进入 server"
+    click A "./everything-agentscope-server" "进入 agentscope server"
+    click T "./TESTING.md" "查看测试文档"
+    click P "./PRODUCT.md" "查看产品文档"
+    click D "./DEBUG.md" "查看调试文档"
+```
+
+### 3) 请求与执行流（简化）
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as Client
+    participant S as Server
+    participant G as AgentScope(Optional)
+    participant M as LLM API
+    participant DB as MySQL/SQLite
+
+    U->>C: 输入任务
+    C->>S: 调用业务服务
+    S->>DB: 读写用户/技能/会话
+    alt AgentScope 开启
+        S->>G: 转发执行请求
+        G->>M: 推理与工具编排
+        M-->>G: 结果
+        G-->>S: 执行输出
+    else 直接模型调用
+        S->>M: Prompt + Context
+        M-->>S: 模型结果
+    end
+    S-->>C: 返回响应
+    C-->>U: 展示结果
+```
+
+## 技术栈
+
+- Java 17
+- JavaFX 21
+- Maven 多模块
+- SQLite（本地存储）
+- MySQL（业务主库）
+- Redis（可选缓存）
+- Gson / Jackson
+- JUnit 5 + jqwik + Mockito
+
+---
 
 ## 快速开始
 
-### 1. 前置准备
+### 1. 环境要求
 
-**必需**
-- JDK 17+（包含 `jpackage`）
-- MySQL 8.x
-- LLM API 访问凭据
+必需：
+- JDK 17+
+- MySQL 8+
+- 可用的大模型 API（`llm.api.*`）
 
-**可选**
-- Redis 6.x+（缓存加速，可降级）
-- 飞书开放平台应用（OAuth 登录 + Webhook 通知）
-- 飞书管理员私信能力（审核通知）
-- SMTP 邮箱（验证码发送，未配置则降级为控制台输出）
+可选：
+- Redis（缓存增强）
+- SMTP（验证码邮件）
+- 飞书开放平台应用（OAuth + 消息通知）
 
-### 2. 数据库初始化
+### 2. 初始化数据库
 
 ```bash
 mysql -u root -p
@@ -147,276 +200,153 @@ CREATE DATABASE yeahmobi_everything CHARACTER SET utf8mb4 COLLATE utf8mb4_unicod
 SOURCE everything-server/src/main/resources/sql/init-mysql.sql;
 ```
 
-### 3. 配置
+### 3. 准备配置文件
 
-编辑 `everything-server/src/main/resources/application.properties`：
-
-```properties
-# LLM API（必填）
-llm.api.url=https://your-llm-api-endpoint/v1
-llm.api.key=YOUR_API_KEY
-
-# MySQL（必填）
-mysql.url=jdbc:mysql://localhost:3306/yeahmobi_everything?useSSL=false&characterEncoding=utf8mb4
-mysql.username=root
-mysql.password=YOUR_MYSQL_PASSWORD
-
-# SMTP 邮件（推荐，用于发送验证码）
-smtp.host=smtp.qq.com
-smtp.port=465
-smtp.username=your-email@qq.com
-smtp.password=YOUR_SMTP_AUTHORIZATION_CODE
-smtp.from=your-email@qq.com
-smtp.ssl=true
-
-# Redis（可选）
-redis.host=localhost
-redis.port=6379
-
-# 飞书（可选）
-feishu.oauth.app_id=YOUR_FEISHU_APP_ID
-feishu.oauth.app_secret=YOUR_FEISHU_APP_SECRET
-feishu.oauth.redirect_uri=http://localhost:8080/auth/feishu/callback
-feishu.admin.user_id=YOUR_ADMIN_UNION_OR_OPEN_ID
-feishu.admin.user_id_type=union_id
-
-# AgentScope Server（可选）
-agentscope.enabled=false
-agentscope.api.url=https://dashscope.aliyuncs.com/compatible-mode/v1
-agentscope.api.key=YOUR_AGENT_API_KEY
-agentscope.model=qwen-max
-agentscope.server.port=8099
-```
-
-> **SMTP 授权码获取**：QQ 邮箱 → 设置 → 账户 → POP3/SMTP 服务 → 开启 → 生成授权码
-
-### 4. 构建与运行
+项目读取：`everything-server/src/main/resources/application.properties`
 
 ```bash
-# 首次构建：安装 server 模块到本地 Maven 仓库
+cp everything-server/src/main/resources/application_tmp.properties \
+   everything-server/src/main/resources/application.properties
+```
+
+最小必填配置：
+
+```properties
+llm.api.url=
+llm.api.key=
+llm.api.model=
+
+mysql.url=jdbc:mysql://localhost:3306/yeahmobi_everything?useSSL=false&characterEncoding=utf8mb4
+mysql.username=
+mysql.password=
+```
+
+### 4. 构建并启动
+
+首次构建（推荐）：
+
+```bash
 ./mvnw clean install -DskipTests
+```
 
-# 后续构建：使用 verify 触发 antrun 插件复制 JARs
+日常运行：
+
+```bash
 ./mvnw clean verify -DskipTests
-
-# 运行 Fat JAR
 java -jar everything-client/target/yeahmobi-everything-1.0.0-all.jar
 ```
 
-> **重要**：多模块项目首次构建请使用 `install` 确保依赖模块正确安装到本地仓库。
-
-## 客户端打包与分发
-
-### 方式一：跨平台 Fat JAR（一次构建，全平台可用）
+快速脚本：
 
 ```bash
-# 首次构建
-./mvnw clean install -DskipTests
-
-# 后续构建
-./mvnw clean verify -DskipTests
+./dev.sh
 ```
 
-产物：`everything-client/target/yeahmobi-everything-1.0.0-all.jar`
+---
 
-## AgentScope Server（可选）
+## 配置说明
 
-当需要独立的智能体服务端时，启动 AgentScope Server：
+以下键位于 `application.properties`。
+
+### 必填
+
+| 键 | 说明 |
+|---|---|
+| `llm.api.url` | 大模型 API 地址 |
+| `llm.api.key` | 大模型 API Key |
+| `llm.api.model` | 模型名 |
+| `mysql.url` | MySQL 连接串 |
+| `mysql.username` | MySQL 用户名 |
+| `mysql.password` | MySQL 密码 |
+
+### 常用可选
+
+| 键 | 说明 |
+|---|---|
+| `redis.host` / `redis.port` | Redis 连接配置 |
+| `smtp.*` | 验证码邮件发送配置 |
+| `feishu.oauth.app_id` / `feishu.oauth.app_secret` | 飞书 OAuth |
+| `feishu.admin.user_id` / `feishu.admin.user_id_type` | 飞书应用机器人接收人 |
+| `agentscope.enabled` | 是否启用 AgentScope |
+| `agentscope.server.port` | AgentScope 服务端口（默认 8099） |
+
+---
+
+## 运行与构建
+
+### 桌面端（主入口）
+
+- 入口类：`com.yeahmobi.everything.Launcher`
+- 产物：`everything-client/target/yeahmobi-everything-1.0.0-all.jar`
+
+### AgentScope 服务（可选）
 
 ```bash
 ./mvnw -pl everything-agentscope-server -am -DskipTests package
 java -jar everything-agentscope-server/target/everything-agentscope-server-1.0.0.jar
 ```
 
-默认端口：`8099`，可通过 `agentscope.server.port` 修改。
+主要接口：
 
-接口示例：
+- `GET /health`
+- `POST /api/agentscope/execute`
+- `POST /api/agentscope/execute/stream`
+- `POST /api/agentscope/multi-agent/execute`
+- `POST /api/agentscope/multi-agent/stream`
 
-- 单步执行：`POST /api/agentscope/execute`
-- 多智能体链路：`POST /api/agentscope/multi-agent/execute`
+### 打包命令
 
-请求体：
+Fat JAR：
 
-```json
-{
-  "input": "用户需求或任务描述",
-  "promptTemplate": "可选模板，支持 {{input}}"
-}
-```
-
-## 个人 Skill 创建与审核
-
-1. 进入侧边栏 `个人 Skill` 页面，填写技能信息并保存草稿  
-2. 点击 `提交审核`，系统会私信通知管理员  
-3. 管理员在 `管理后台 → 个人 Skill 审核` 中通过或驳回  
-4. 审核通过后自动同步到公共技能库（全量用户可见）
-
-## 技能市场
-
-在侧边栏进入 `技能市场`：
-- 浏览公开技能
-- 一键添加到个人技能库（保存为草稿，可再编辑）
-
-## Anthropic Skills 全量导入（默认包含）
-
-本项目支持从本地克隆的 Anthropic Skills 仓库导入全部技能：
-
-1. 先克隆仓库（本地路径随意）  
-2. 在 `application.properties` 设置路径并开启自动导入  
-
-```properties
-skills.anthropic.auto_import=true
-skills.anthropic.path=/path/to/anthropics/skills
-```
-
-首次启动会自动导入 `SKILL.md` 内容并生成 Skill 介绍与 Prompt 模板。  
-技能说明来源：[anthropics/skills](https://github.com/anthropics/skills)
-
-## Skill 技能包文件规范
-
-个人 Skill 支持导出 JSON 技能包（私有格式 v1.0）：
-
-```json
-{
-  "schemaVersion": "1.0",
-  "type": "personal-skill",
-  "id": "uuid",
-  "ownerUserId": "user-id",
-  "name": "技能名称",
-  "description": "一句话描述价值",
-  "category": "分类",
-  "promptTemplate": "必须包含 {{input}}",
-  "createdAt": 0,
-  "updatedAt": 0
-}
-```
-
-校验规则：
-- `name`/`description`/`category`/`promptTemplate` 必填  
-- `promptTemplate` 必须包含 `{{input}}` 或 `{{user_input}}`
-
-分发后，用户在任何安装了 JDK 17+ 的机器上直接运行：
 ```bash
-java -jar yeahmobi-everything-1.0.0-all.jar
-```
-
-### 方式二：原生安装包（.dmg / .msi）
-
-#### 本地构建
-
-`jpackage` 只能为当前系统生成安装包（macOS 生成 `.dmg`，Windows 生成 `.msi`）。
-
-**macOS：**
-```bash
-# 首次构建（安装依赖模块 + 准备 libs 目录）
-./mvnw clean install -DskipTests
-./mvnw verify -DskipTests
-
-# 后续构建
 ./mvnw clean verify -DskipTests
-
-# 生成 .dmg
-./mvnw jpackage:jpackage -pl everything-client
-
-# 产物
-everything-client/target/dist/Yeahmobi Everything-1.0.0.dmg
 ```
 
-**Windows：**
-```cmd
-REM 首次构建
-mvnw.cmd clean install -DskipTests
-mvnw.cmd verify -DskipTests
-
-REM 后续构建
-mvnw.cmd clean verify -DskipTests
-
-REM 生成 .msi（需要 WiX Toolset 3.x）
-mvnw.cmd jpackage:jpackage -pl everything-client
-
-REM 产物
-everything-client\target\dist\Yeahmobi Everything-1.0.0.msi
-```
-
-> Windows 上生成 `.msi` 需要安装 [WiX Toolset 3.x](https://wixtoolset.org/releases/) 并加入 PATH。
-
-#### CI/CD 自动构建（推荐）
-
-项目已配置 GitHub Actions（`.github/workflows/build.yml`），推送 tag 后自动在多平台构建：
+原生安装包（jpackage）：
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+./mvnw jpackage:jpackage -pl everything-client
 ```
 
-CI 会自动在三个平台构建并创建 Release：
+- macOS 产物：`.dmg`
+- Windows 产物：`.msi`（需 WiX Toolset）
 
-| 产物 | 说明 |
-|------|------|
-| `yeahmobi-everything-1.0.0-all.jar` | 跨平台 Fat JAR |
-| `Yeahmobi Everything-1.0.0.msi` | Windows 安装包 |
-| `Yeahmobi Everything-1.0.0.dmg` | macOS 安装包 |
+CI 工作流：`.github/workflows/build.yml`
 
-### 分发方式对比
+---
 
-| | Fat JAR | 原生安装包 |
-|---|---|---|
-| **构建环境** | 任意一台机器 | 需要目标 OS 或 CI/CD |
-| **用户前置要求** | JDK 17+ | 无，自带运行时 |
-| **安装体验** | 双击 JAR 或命令行启动 | 系统级安装（快捷方式、Dock 图标） |
-| **适用阶段** | 开发 / 内测 | 正式发布 |
+## 测试
 
-## 常用构建命令
+全量测试：
 
 ```bash
-# 编译全部
-./mvnw compile
-
-# 只编译 server
-./mvnw compile -pl everything-server
-
-# 只编译 client（含 server 依赖）
-./mvnw compile -pl everything-client -am
-
-# 打包全部（Fat JAR + 模块 JAR）
-./mvnw package -DskipTests
-
-# 只打包 server
-./mvnw package -pl everything-server -DskipTests
-
-# 生成原生安装包（需先 package）
-./mvnw jpackage:jpackage -pl everything-client
-
-# 运行测试
 ./mvnw test
-
-# 开发模式运行（JavaFX 插件）
-./mvnw javafx:run -pl everything-client
 ```
 
-## 飞书 OAuth 登录说明
+更多测试策略见：`TESTING.md`
 
-飞书登录采用 OAuth 2.0 授权码模式。点击「飞书登录」后：
+---
 
-1. 应用在本地 **8080 端口**启动轻量 HTTP 服务器
-2. 系统浏览器打开飞书授权页面
-3. 用户在飞书完成授权
-4. 飞书回调 `http://localhost:8080/auth/feishu/callback?code=xxx`
-5. 本地服务器接收 code，完成登录，浏览器显示「授权成功」
-6. 服务器自动关闭
+## 常见问题
 
-## 依赖汇总
+**Q1：`.gitignore` 已更新，但文件仍被提交？**  
+A：`.gitignore` 只对未跟踪文件生效。对已跟踪文件执行 `git rm --cached` 后再提交。
 
-| 依赖 | 必需/可选 | 用途 |
-|------|----------|------|
-| JDK 17+ | 必需 | 编译和运行 |
-| Maven 3.x | 必需 | 构建（已内置 Maven Wrapper） |
-| MySQL 8.x | 必需 | 用户账号、Skill 配置、知识库、反馈 |
-| Redis 6.x+ | 可选 | 会话缓存、Skill 列表缓存、知识库缓存 |
-| SMTP 邮箱 | 推荐 | 注册验证码发送（未配置则控制台输出） |
-| 飞书开放平台 | 可选 | 飞书 OAuth 登录 + Webhook 通知 |
-| LLM API | 必需 | 大模型对话服务 |
+**Q2：不配置 SMTP 可以注册吗？**  
+A：可以走降级逻辑（验证码不经邮件发送），生产环境建议配置 SMTP。
+
+**Q3：Redis 是必需的吗？**  
+A：不是。系统支持无 Redis 退化运行。
+
+---
+
+## 文档索引
+
+- `PRODUCT.md`：产品与能力设计
+- `TESTING.md`：测试策略与验证方式
+- `DEBUG.md`：调试指南
+- `HR_*`：HR 场景设计与验收文档
 
 ## License
 
-Internal use only - Yeahmobi
+Internal use only - Yeahmobi.
