@@ -1,0 +1,107 @@
+# =========================
+# OS / File Explorer
+# =========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100/
+.Trashes/
+._*
+
+# =========================
+# IDE / Editor
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# =========================
+# Java / Maven / Gradle
+# =========================
+target/
+out/
+build/
+bin/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+dependency-reduced-pom.xml
+
+# Maven wrapper cache (script should be tracked)
+.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Logs / Runtime / Temp
+# =========================
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.tmp
+*.temp
+*.swp
+*.swo
+hs_err_pid*
+replay_pid*
+
+# =========================
+# Test / Coverage Reports
+# =========================
+coverage/
+jacoco.exec
+*.lcov
+surefire-reports/
+failsafe-reports/
+
+# =========================
+# Local env / secrets
+# =========================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+credentials.json
+secrets.json
+
+# =========================
+# Node / Frontend artifacts (if present)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+
+# =========================
+# Python artifacts (if tooling scripts exist)
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# =========================
+# Cursor / AI tooling local state
+# =========================
+.cursor/
+
