@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -10,6 +13,7 @@ import java.util.Properties;
  */
 public final class Config {
 
+    private static final Logger log = LoggerFactory.getLogger(Config.class);
     private static final String CONFIG_FILE = "application.properties";
     private static Config instance;
     private final Properties properties;
@@ -29,7 +33,7 @@ public final class Config {
                 properties.load(input);
             }
         } catch (IOException e) {
-            // Properties remain empty if loading fails
+            log.warn("Failed to load application.properties, using defaults: {}", e.getMessage());
         }
     }
 

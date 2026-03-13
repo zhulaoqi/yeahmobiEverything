@@ -1,5 +1,9 @@
 package com.yeahmobi.everything.machineops;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +16,8 @@ import java.util.UUID;
  * Native scheduler adapter (best-effort). Unsupported cases should fallback.
  */
 public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(NativeOsSchedulerAdapter.class);
 
     private final DefaultOsCommandAdapter commandAdapter = new DefaultOsCommandAdapter();
     private static final Path MAC_LAUNCHD_DIR = Path.of(
@@ -95,8 +101,8 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             runSystem("launchctl unload -w \"" + plist + "\"", 30);
             try {
                 Files.deleteIfExists(plist);
-            } catch (Exception ignored) {
-                // ignore delete errors
+            } catch (IOException e) {
+                log.warn("Failed to delete temp file, continuing: {}", e.getMessage());
             }
             return new CliScheduleResult(true, "native-macos", "原生任务已删除", null);
         }
