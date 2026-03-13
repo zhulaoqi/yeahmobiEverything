@@ -98,7 +98,6 @@ public class AnthropicSkillImporter {
                     }
                     case REPAIRED -> repaired++;
                     case SKIPPED -> skipped++;
-                    case FAILED -> failed++;
                 }
             } catch (Exception ex) {
                 failed++;
@@ -123,7 +122,7 @@ public class AnthropicSkillImporter {
      * Result of importing a single SKILL.md file.
      */
     private enum SingleImportOutcome {
-        IMPORTED, REPAIRED, SKIPPED, FAILED
+        IMPORTED, REPAIRED, SKIPPED
     }
 
     private record SingleImportResult(
@@ -136,9 +135,6 @@ public class AnthropicSkillImporter {
         }
         static SingleImportResult skipped() {
             return new SingleImportResult(SingleImportOutcome.SKIPPED, false, false);
-        }
-        static SingleImportResult failed() {
-            return new SingleImportResult(SingleImportOutcome.FAILED, false, false);
         }
         static SingleImportResult imported(boolean locAttempted, boolean locSucceeded) {
             return new SingleImportResult(SingleImportOutcome.IMPORTED, locAttempted, locSucceeded);
@@ -162,10 +158,6 @@ public class AnthropicSkillImporter {
                 relPath
         );
 
-        String name = manifest.name();
-        String description = manifest.description();
-        String category = manifest.category();
-        String promptTemplate = manifest.promptTemplate();
         String id = UUID.nameUUIDFromBytes(sourceId.getBytes(StandardCharsets.UTF_8)).toString();
 
         var existingOpt = skillRepository.getSkill(id);
@@ -181,10 +173,10 @@ public class AnthropicSkillImporter {
 
         SkillAdmin skill = new SkillAdmin(
                 id,
-                name,
-                description,
+                manifest.name(),
+                manifest.description(),
                 "default.png",
-                category,
+                manifest.category(),
                 true,
                 manifest.usageGuide(),
                 manifest.examples(),
@@ -197,7 +189,7 @@ public class AnthropicSkillImporter {
                 manifest.contextPolicy(),
                 SkillType.GENERAL,
                 SkillKind.PROMPT_ONLY,
-                promptTemplate,
+                manifest.promptTemplate(),
                 manifest.executionMode(),
                 System.currentTimeMillis()
         );
