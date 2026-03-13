@@ -37,8 +37,8 @@ public class LocalDatabaseManager {
 
     private static final Logger log = LoggerFactory.getLogger(LocalDatabaseManager.class);
     private static final String INIT_SQL_RESOURCE = "sql/init-local.sql";
-    private static final String DEFAULT_DB_PATH = System.getProperty("user.home")
-            + "/.yeahmobi-everything/data.db";
+    private static final Path DEFAULT_DB_PATH =
+            Path.of(System.getProperty("user.home"), ".yeahmobi-everything", "data.db");
 
     private final String dbPath;
     private final String jdbcUrl;
@@ -53,7 +53,7 @@ public class LocalDatabaseManager {
     public LocalDatabaseManager(Config config) {
         String configuredPath = config.getLocalDbPath();
         this.dbPath = (configuredPath != null && !configuredPath.isBlank())
-                ? configuredPath : DEFAULT_DB_PATH;
+                ? configuredPath : DEFAULT_DB_PATH.toString();
         this.jdbcUrl = "jdbc:sqlite:" + this.dbPath;
     }
 
