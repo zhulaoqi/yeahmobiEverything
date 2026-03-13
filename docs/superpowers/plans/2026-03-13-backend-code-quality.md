@@ -19,7 +19,7 @@
 **Files:**
 - Modify: `everything-server/pom.xml`
 
-> **Context:** `slf4j-api` (2.0.17) is already a transitive dependency via `agentscope`. Only a binding (logback-classic) is missing, which means SLF4J silently discards all log output today.
+> **Context:** `slf4j-api` (2.0.17) is already resolved transitively via `agentscope`, so the API is on the compile classpath. We add it explicitly to pin the version and make the dependency visible. We also add `logback-classic` as the binding — without it, SLF4J silently discards all log output.
 
 - [ ] **Step 1: Verify baseline tests pass**
 
@@ -28,11 +28,17 @@
   ```
   Expected: `BUILD SUCCESS` (or known failures unrelated to logging)
 
-- [ ] **Step 2: Add logback-classic to everything-server/pom.xml**
+- [ ] **Step 2: Add slf4j-api + logback-classic to everything-server/pom.xml**
 
   In `everything-server/pom.xml`, add inside `<dependencies>` after the Jakarta Mail block:
 
   ```xml
+  <!-- SLF4J API (already transitive via agentscope; declared explicitly to pin version) -->
+  <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.12</version>
+  </dependency>
   <!-- Logging binding (SLF4J → Logback) -->
   <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -107,7 +113,7 @@
 
 - [ ] **Step 2: Migrate FeishuOAuthService.java**
 
-  Same pattern. Also add `SmtpEmailService` R3 constants (see Task 10 — do NOT do R3 here yet; keep tasks separate).
+  Same JUL→SLF4J pattern. Do not apply R3 constants in this task — that is handled in Task 12.
 
 - [ ] **Step 3: Migrate SmtpEmailService.java**
 
@@ -224,13 +230,20 @@
 
 - [ ] **Step 2: Migrate EmailNotifyChannel.java** — JUL→SLF4J pattern
 
-- [ ] **Step 3: Verify compile**
+- [ ] **Step 3: Verify no remaining JUL imports in opsos package**
+
+  ```bash
+  grep -r "java.util.logging" everything-server/src/main/java/com/yeahmobi/everything/opsos/
+  ```
+  Expected: empty
+
+- [ ] **Step 4: Verify compile**
 
   ```bash
   ./mvnw compile -pl everything-server 2>&1 | tail -5
   ```
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
   ```bash
   git add everything-server/src/main/java/com/yeahmobi/everything/opsos/
@@ -344,15 +357,23 @@
   log.debug("Config agentscope.server.port={}", config.getAgentScopeServerPort());
   ```
 
-- [ ] **Step 2: Add Logger to FeishuNotifierImpl and replace System.err calls**
+- [ ] **Step 2: Add Logger to FeishuNotifierImpl and replace System.err calls (6 occurrences)**
 
   Add after existing constants:
   ```java
   private static final Logger log = LoggerFactory.getLogger(FeishuNotifierImpl.class);
   ```
-  Replace all `System.err.println(...)` with `log.warn(...)` or `log.error(...)` as appropriate:
-  - Configuration-missing messages (admin user not configured, app_id not configured) → `log.warn("...")`
-  - Exception messages (Failed to send...) → `log.error("...: {}", e.getMessage())` or pass exception: `log.error("Failed to send Feishu notification", e)`
+  Add imports: `import org.slf4j.Logger; import org.slf4j.LoggerFactory;`
+
+  Replace by category (R1 rule: `log.error` for unexpected failures, `log.warn` for configuration/recoverable):
+  - Lines 72, 76, 104, 108 — configuration-missing messages → `log.warn("...")`
+  - Lines 96, 129 — failed API call with exception → `log.error("Failed to send Feishu notification", e)`
+
+  Verify all 6 replaced:
+  ```bash
+  grep -c "System\.err" everything-server/src/main/java/com/yeahmobi/everything/notification/FeishuNotifierImpl.java
+  ```
+  Expected: `0`
 
 - [ ] **Step 3: Add Logger to FeedbackServiceImpl and replace System.err call**
 
@@ -360,9 +381,9 @@
   ```java
   System.err.println("Failed to send Feishu notification: " + e.getMessage());
   ```
-  With:
+  With (`log.error` — this is a genuine API failure, not a configuration warning):
   ```java
-  log.warn("Failed to send Feishu notification", e);
+  log.error("Failed to send Feishu notification", e);
   ```
 
 - [ ] **Step 4: Verify no remaining System.out/err in non-Runner src/main/**
@@ -390,6 +411,8 @@
 ---
 
 ### Task 9: Checkpoint — Verify full R1 completion
+
+> **No code changes in this task** — read-only verification only. No commit required.
 
 - [ ] **Step 1: Check no java.util.logging remains in src/main/**
 
