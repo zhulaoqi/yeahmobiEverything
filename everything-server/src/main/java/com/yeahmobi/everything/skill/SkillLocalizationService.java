@@ -9,12 +9,13 @@ import com.yeahmobi.everything.common.Config;
 import com.yeahmobi.everything.common.HttpClientUtil;
 import com.yeahmobi.everything.common.NetworkException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Best-effort localization generator for Skill display metadata.
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  */
 public class SkillLocalizationService {
 
-    private static final Logger LOGGER = Logger.getLogger(SkillLocalizationService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(SkillLocalizationService.class);
     private static final Gson GSON = new Gson();
 
     private final Config config;
@@ -67,7 +68,7 @@ public class SkillLocalizationService {
         try {
             return localizeWithRetry(skill, url, apiKey, model, system);
         } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Skill localization failed for: " + skill.id(), ex);
+            log.warn("Skill localization failed for: {}", skill.id(), ex);
             return Optional.empty();
         }
     }
@@ -96,7 +97,7 @@ public class SkillLocalizationService {
                 Optional<SkillLocalizationPayload> payload = parsePayload(response);
                 if (payload.isPresent()) {
                     if (i > 0) {
-                        LOGGER.info("Skill localization recovered after retry for: " + skill.id());
+                        log.info("Skill localization recovered after retry for: {}", skill.id());
                     }
                     return payload;
                 }

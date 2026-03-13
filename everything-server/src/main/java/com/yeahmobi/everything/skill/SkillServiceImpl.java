@@ -8,11 +8,12 @@ import com.yeahmobi.everything.repository.local.FavoriteRepository;
 import com.yeahmobi.everything.repository.local.UsageRepository;
 import com.yeahmobi.everything.repository.mysql.SkillRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
  */
 public class SkillServiceImpl implements SkillService {
 
-    private static final Logger LOGGER = Logger.getLogger(SkillServiceImpl.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(SkillServiceImpl.class);
 
     /** Cache TTL for Skill list: 10 minutes */
     static final long SKILL_CACHE_TTL_SECONDS = 600;
@@ -68,7 +69,7 @@ public class SkillServiceImpl implements SkillService {
                 return cached.get();
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to read skill cache, falling back to database", e);
+            log.warn("Failed to read skill cache, falling back to database", e);
         }
 
         // 2. Query MySQL via SkillRepository
@@ -83,7 +84,7 @@ public class SkillServiceImpl implements SkillService {
             try {
                 cacheService.cacheSkillList(skills, SKILL_CACHE_TTL_SECONDS);
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to cache skill list", e);
+                log.warn("Failed to cache skill list", e);
             }
 
             return skills;
@@ -143,7 +144,7 @@ public class SkillServiceImpl implements SkillService {
                     .filter(skill -> favoriteIds.contains(skill.id()))
                     .collect(Collectors.toList());
         } catch (NetworkException e) {
-            LOGGER.log(Level.WARNING, "Failed to fetch skills for favorites", e);
+            log.warn("Failed to fetch skills for favorites", e);
             return List.of();
         }
     }
@@ -174,7 +175,7 @@ public class SkillServiceImpl implements SkillService {
                     .filter(skill -> usedIds.contains(skill.id()))
                     .collect(Collectors.toList());
         } catch (NetworkException e) {
-            LOGGER.log(Level.WARNING, "Failed to fetch used skills", e);
+            log.warn("Failed to fetch used skills", e);
             return List.of();
         }
     }
@@ -196,7 +197,7 @@ public class SkillServiceImpl implements SkillService {
                     .filter(skill -> skill != null)
                     .collect(Collectors.toList());
         } catch (NetworkException e) {
-            LOGGER.log(Level.WARNING, "Failed to fetch skills for recently used", e);
+            log.warn("Failed to fetch skills for recently used", e);
             return List.of();
         }
     }
