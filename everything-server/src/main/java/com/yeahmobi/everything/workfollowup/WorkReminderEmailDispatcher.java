@@ -36,6 +36,11 @@ import java.util.regex.Pattern;
 public class WorkReminderEmailDispatcher {
 
     private static final Logger log = LoggerFactory.getLogger(WorkReminderEmailDispatcher.class);
+    private static final int MAX_RETRY_DELAY_MINUTES = 30;
+    private static final int RETRY_BACKOFF_MULTIPLIER = 5;
+    private static final String STATUS_SENT = "sent";
+    private static final String STATUS_FAILED = "failed";
+    private static final String STATUS_PENDING = "pending";
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Pattern NOTE_LEAD_PATTERN = Pattern.compile("(?i)\\[lead=(\\d{1,3})\\]|提前\\s*(\\d{1,3})\\s*分钟");
     private static final Path STATE_PATH = Path.of(
@@ -173,7 +178,7 @@ public class WorkReminderEmailDispatcher {
             TriggerDecision decision = triggerEngine.dailyBrief(now.toLocalDate(), channelType.name());
             String key = decision.idempotencyKey();
             NotifyState old = states.get(key);
-            if (old != null && "sent".equalsIgnoreCase(old.status())) {
+            if (old != null && STATUS_SENT.equalsIgnoreCase(old.status())) {
                 continue;
             }
             if (old != null && old.nextRetryAt() != null && !old.nextRetryAt().isBlank()) {
@@ -201,7 +206,7 @@ public class WorkReminderEmailDispatcher {
         for (NotifyChannelType channel : channels) {
             String key = keySeed + "|channel|" + channel.name().toLowerCase(Locale.ROOT);
             NotifyState old = states.get(key);
-            if (old != null && "sent".equalsIgnoreCase(old.status())) {
+            if (old != null && STATUS_SENT.equalsIgnoreCase(old.status())) {
                 continue;
             }
             if (old != null && old.nextRetryAt() != null && !old.nextRetryAt().isBlank()) {
@@ -226,7 +231,7 @@ public class WorkReminderEmailDispatcher {
         if (result.success()) {
             states.put(key, new NotifyState(
                     key,
-                    "sent",
+                    STATUS_SENT,
                     now.format(DT),
                     now.format(DT),
                     old == null ? 1 : old.attempts() + 1,
@@ -235,10 +240,10 @@ public class WorkReminderEmailDispatcher {
             ));
         } else {
             int attempts = old == null ? 1 : old.attempts() + 1;
-            LocalDateTime retryAt = now.plusMinutes(Math.min(30, 5 * attempts));
+            LocalDateTime retryAt = now.plusMinutes(Math.min(MAX_RETRY_DELAY_MINUTES, RETRY_BACKOFF_MULTIPLIER * attempts));
             states.put(key, new NotifyState(
                     key,
-                    "failed",
+                    STATUS_FAILED,
                     now.format(DT),
                     old == null ? "" : old.sentAt(),
                     attempts,
@@ -275,10 +280,10 @@ public class WorkReminderEmailDispatcher {
                 todo.id(),
                 lead,
                 channelsCsv,
-                "pending",
+                STATUS_PENDING,
                 "",
                 "",
-                "pending",
+                STATUS_PENDING,
                 "",
                 "",
                 safe(todo.status()),
@@ -304,13 +309,13 @@ public class WorkReminderEmailDispatcher {
 
         NotifyResult emailResult = byChannel.get(NotifyChannelType.EMAIL);
         if (emailResult != null) {
-            emailStatus = emailResult.success() ? "sent" : "failed";
+            emailStatus = emailResult.success() ? STATUS_SENT : STATUS_FAILED;
             emailAt = emailResult.success() ? now.format(DT) : emailAt;
             emailErr = emailResult.success() ? "" : compact(emailResult.message(), 120);
         }
         NotifyResult feishuResult = byChannel.get(NotifyChannelType.FEISHU);
         if (feishuResult != null) {
-            feishuStatus = feishuResult.success() ? "sent" : "failed";
+            feishuStatus = feishuResult.success() ? STATUS_SENT : STATUS_FAILED;
             feishuAt = feishuResult.success() ? now.format(DT) : feishuAt;
             feishuErr = feishuResult.success() ? "" : compact(feishuResult.message(), 120);
         }
