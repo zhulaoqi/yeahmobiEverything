@@ -5,8 +5,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages Redis connections using Jedis connection pool.
@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  */
 public class RedisManager {
 
-    private static final Logger LOGGER = Logger.getLogger(RedisManager.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(RedisManager.class);
 
     private final JedisPool jedisPool;
 
@@ -59,7 +59,7 @@ public class RedisManager {
         String effectivePassword = (password != null && !password.isBlank()) ? password : null;
 
         this.jedisPool = new JedisPool(poolConfig, host, port, 2000, effectivePassword, database);
-        LOGGER.info("RedisManager initialized: " + host + ":" + port + "/" + database);
+        log.info("RedisManager initialized: {}:{}/{}", host, port, database);
     }
 
     /**
@@ -92,7 +92,7 @@ public class RedisManager {
         try (Jedis jedis = jedisPool.getResource()) {
             return "PONG".equals(jedis.ping());
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Redis is not available: " + e.getMessage());
+            log.warn("Redis is not available", e);
             return false;
         }
     }
@@ -103,7 +103,7 @@ public class RedisManager {
     public void close() {
         if (jedisPool != null && !jedisPool.isClosed()) {
             jedisPool.close();
-            LOGGER.info("RedisManager closed.");
+            log.info("RedisManager closed.");
         }
     }
 }

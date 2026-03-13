@@ -11,10 +11,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
  */
 public class MySQLDatabaseManager {
 
-    private static final Logger LOGGER = Logger.getLogger(MySQLDatabaseManager.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(MySQLDatabaseManager.class);
     
     private static final String INIT_SQL_RESOURCE = "sql/init-mysql.sql";
     private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/yeahmobi_everything";
@@ -88,9 +89,9 @@ public class MySQLDatabaseManager {
         // Explicitly load MySQL JDBC driver (required for Fat JAR)
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            LOGGER.info("MySQL JDBC driver loaded successfully");
+            log.info("MySQL JDBC driver loaded successfully");
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "MySQL JDBC driver not found in classpath", e);
+            log.error("MySQL JDBC driver not found in classpath", e);
             throw new SQLException("MySQL JDBC driver not found", e);
         }
         
