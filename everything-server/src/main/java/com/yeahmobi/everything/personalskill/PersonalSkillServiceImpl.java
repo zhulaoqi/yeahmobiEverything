@@ -8,6 +8,9 @@ import com.yeahmobi.everything.skill.SkillExecutionMode;
 import com.yeahmobi.everything.skill.SkillKind;
 import com.yeahmobi.everything.skill.SkillType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +19,8 @@ import java.util.UUID;
  * Implementation of {@link PersonalSkillService}.
  */
 public class PersonalSkillServiceImpl implements PersonalSkillService {
+
+    private static final Logger log = LoggerFactory.getLogger(PersonalSkillServiceImpl.class);
 
     private final PersonalSkillRepository repository;
     private final FeishuNotifier feishuNotifier;
@@ -117,7 +122,7 @@ public class PersonalSkillServiceImpl implements PersonalSkillService {
             try {
                 feishuNotifier.sendPersonalSkillReviewNotification(updated);
             } catch (Exception ignored) {
-                // Notification failure should not block submission
+                log.warn("Feishu notification failed for personal skill review, submission continues: {}", ignored.getMessage());
             }
         }
         return new PersonalSkillResult(true, "已提交审核，管理员将尽快评估", updated);
@@ -218,7 +223,7 @@ public class PersonalSkillServiceImpl implements PersonalSkillService {
             try {
                 cacheService.invalidateSkillCache();
             } catch (Exception ignored) {
-                // Cache failure should not block approval
+                log.warn("Cache invalidation failed during personal skill approval, continuing: {}", ignored.getMessage());
             }
         }
     }

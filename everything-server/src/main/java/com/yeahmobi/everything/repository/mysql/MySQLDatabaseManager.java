@@ -137,7 +137,7 @@ public class MySQLDatabaseManager {
             try {
                 connection.close();
             } catch (SQLException e) {
-                // Ignore close errors
+                log.debug("Ignoring close error for MySQL DB connection: {}", e.getMessage());
             }
             connection = null;
         }

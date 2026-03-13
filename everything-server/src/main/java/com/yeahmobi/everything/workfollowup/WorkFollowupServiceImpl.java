@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.workfollowup;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * </p>
  */
 public class WorkFollowupServiceImpl implements WorkFollowupService {
+
+    private static final Logger log = LoggerFactory.getLogger(WorkFollowupServiceImpl.class);
 
     private static final Map<String, WorkTodo> TODOS = new ConcurrentHashMap<>();
     private static final WorkTodoMetaStore META_STORE = new WorkTodoMetaStore();
@@ -196,6 +201,7 @@ public class WorkFollowupServiceImpl implements WorkFollowupService {
         try {
             return LocalDateTime.parse(value.trim(), DATE_TIME_FMT);
         } catch (Exception ignored) {
+            log.debug("Could not parse datetime '{}', returning null", value);
             return null;
         }
     }
@@ -241,7 +247,7 @@ public class WorkFollowupServiceImpl implements WorkFollowupService {
                 }
             }
         } catch (Exception ignored) {
-            // Keep empty list on read errors.
+            log.debug("Could not load todos from disk, keeping empty list: {}", ignored.getMessage());
         }
     }
 
@@ -264,7 +270,7 @@ public class WorkFollowupServiceImpl implements WorkFollowupService {
                     StandardOpenOption.WRITE
             );
         } catch (Exception ignored) {
-            // Keep in-memory behavior when file write fails.
+            log.debug("Could not persist todos to disk, continuing with in-memory state: {}", ignored.getMessage());
         }
     }
 

@@ -238,6 +238,7 @@ public class SkillLocalizationService {
             }
             return msg.get("content").isJsonNull() ? null : msg.get("content").getAsString();
         } catch (Exception ex) {
+            log.debug("Could not parse assistant content from response, returning null: {}", ex.getMessage());
             return null;
         }
     }
@@ -283,7 +284,7 @@ public class SkillLocalizationService {
                     }
                 }
             } catch (Exception ignored) {
-                // ignore malformed items
+                log.debug("Skipping malformed JSON array item: {}", ignored.getMessage());
             }
         }
         return inputs;
@@ -352,7 +353,7 @@ public class SkillLocalizationService {
                     list.add(s.trim());
                 }
             } catch (Exception ignored) {
-                // ignore malformed items
+                log.debug("Skipping malformed JSON array item: {}", ignored.getMessage());
             }
         }
         return list;

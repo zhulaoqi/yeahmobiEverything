@@ -403,6 +403,7 @@ public class WorkReminderEmailDispatcher {
             try {
                 return Math.max(1, Math.min(180, Integer.parseInt(value)));
             } catch (Exception ignored) {
+                log.debug("Could not parse lead minutes from note, using default {}", defaultLeadMinutes);
                 return defaultLeadMinutes;
             }
         }
@@ -448,6 +449,7 @@ public class WorkReminderEmailDispatcher {
         try {
             return LocalDateTime.parse(value.trim(), DT);
         } catch (Exception ignored) {
+            log.debug("Could not parse datetime '{}', returning null", value);
             return null;
         }
     }
@@ -459,6 +461,7 @@ public class WorkReminderEmailDispatcher {
         try {
             return LocalTime.parse(value.trim());
         } catch (Exception ignored) {
+            log.debug("Could not parse time '{}', defaulting to 18:00", value);
             return LocalTime.of(18, 0);
         }
     }
@@ -558,6 +561,7 @@ public class WorkReminderEmailDispatcher {
         try {
             attempts = Integer.parseInt(unesc(p[4]));
         } catch (Exception ignored) {
+            log.debug("Could not parse attempts value, defaulting to 0");
             attempts = 0;
         }
         return new NotifyState(

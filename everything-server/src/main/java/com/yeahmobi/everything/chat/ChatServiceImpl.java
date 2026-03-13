@@ -387,7 +387,7 @@ public class ChatServiceImpl implements ChatService {
         try {
             cachedText = cacheService.getCachedKnowledgeText(skillId);
         } catch (Exception e) {
-            // Redis unavailable — fall through to database query
+            log.debug("Redis unavailable for knowledge cache lookup, falling through to database query: {}", e.getMessage());
         }
 
         String knowledgeText;
@@ -402,7 +402,7 @@ public class ChatServiceImpl implements ChatService {
                 try {
                     cacheService.cacheKnowledgeText(skillId, knowledgeText, KNOWLEDGE_CACHE_TTL_SECONDS);
                 } catch (Exception e) {
-                    // Redis unavailable — continue without caching
+                    log.debug("Redis unavailable for knowledge cache write, continuing without caching: {}", e.getMessage());
                 }
             }
         }
@@ -551,6 +551,7 @@ public class ChatServiceImpl implements ChatService {
             String merged = knowledgeBaseService.getMergedKnowledgeText(skillId);
             return merged != null ? merged : "";
         } catch (Exception ignored) {
+            log.debug("Could not fetch knowledge text for skill '{}', returning empty: {}", skillId, ignored.getMessage());
             return "";
         }
     }
@@ -567,6 +568,7 @@ public class ChatServiceImpl implements ChatService {
                     .limit(MAX_KNOWLEDGE_SOURCES)
                     .toList();
         } catch (Exception ignored) {
+            log.debug("Could not fetch knowledge sources for skill '{}', returning empty: {}", skillId, ignored.getMessage());
             return List.of();
         }
     }

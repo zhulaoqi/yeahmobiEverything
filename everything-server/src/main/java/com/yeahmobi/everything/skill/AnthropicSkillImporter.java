@@ -193,7 +193,7 @@ public class AnthropicSkillImporter {
             try {
                 cacheService.invalidateSkillCache();
             } catch (Exception ignored) {
-                // ignore cache failures
+                log.debug("Cache invalidation failed after skill import, continuing: {}", ignored.getMessage());
             }
         }
         return new SkillImportReport(
@@ -305,6 +305,7 @@ public class AnthropicSkillImporter {
             );
             return new SkillLocalizationService(config, httpClientUtil);
         } catch (Exception ex) {
+            log.debug("buildLocalizer failed, localization will be skipped: {}", ex.getMessage());
             return null;
         }
     }
@@ -628,6 +629,7 @@ public class AnthropicSkillImporter {
         try {
             return SkillExecutionMode.valueOf(value.trim().toUpperCase());
         } catch (Exception ex) {
+            log.debug("Unknown execution_mode value '{}', defaulting to SINGLE", value);
             return SkillExecutionMode.SINGLE;
         }
     }

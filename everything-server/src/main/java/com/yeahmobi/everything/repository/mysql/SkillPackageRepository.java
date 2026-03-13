@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.repository.mysql;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,6 +12,8 @@ import java.util.Optional;
  * Repository for skill ZIP package install records.
  */
 public class SkillPackageRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(SkillPackageRepository.class);
 
     private final MySQLDatabaseManager db;
 
@@ -31,6 +36,7 @@ public class SkillPackageRepository {
                 }
             }
         } catch (Exception ignored) {
+            log.debug("Skill package lookup failed, returning empty (MySQL may be unavailable): {}", ignored.getMessage());
             return Optional.empty();
         }
         return Optional.empty();

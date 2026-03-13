@@ -155,7 +155,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             try {
                 mins = Math.max(1, Math.min(1440, Integer.parseInt(n)));
             } catch (Exception ignored) {
-                // use default
+                log.debug("Could not parse interval from triggerSpec '{}', using default 30 minutes", spec);
             }
             createCmd = "schtasks /Create /TN \"" + name + "\" /TR \"" + escapeWindowsCommand(command)
                     + "\" /SC MINUTE /MO " + mins + " /F";
@@ -249,6 +249,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             }
             return out;
         } catch (Exception e) {
+            log.debug("Could not list macOS launchd jobs, returning empty: {}", e.getMessage());
             return List.of();
         }
     }
@@ -339,6 +340,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
                 int mins = Math.max(1, Math.min(24 * 60, Integer.parseInt(n)));
                 return mins * 60;
             } catch (Exception ignored) {
+                log.debug("Could not parse interval seconds from '{}', using default 1800s", spec);
                 return 1800;
             }
         }
@@ -353,6 +355,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
                 int mins = Math.max(1, Math.min(59, Integer.parseInt(n)));
                 return "*/" + mins + " * * * *";
             } catch (Exception ignored) {
+                log.debug("Could not parse cron expression from '{}', using default '*/30 * * * *'", spec);
                 return "*/30 * * * *";
             }
         }

@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.hrassist;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class HrCaseServiceImpl implements HrCaseService {
 
+    private static final Logger log = LoggerFactory.getLogger(HrCaseServiceImpl.class);
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Path BASE_DIR = Path.of(System.getProperty("user.home"), ".everything-assistant");
     private static final Path CASES_FILE = BASE_DIR.resolve("hr-cases.tsv");
@@ -320,6 +324,7 @@ public class HrCaseServiceImpl implements HrCaseService {
             try {
                 confidence = Double.parseDouble(unesc(p[5]));
             } catch (Exception ignored) {
+                log.debug("Could not parse confidence value, defaulting to 0.0");
                 confidence = 0.0;
             }
             EvidenceRef e = new EvidenceRef(
@@ -364,6 +369,7 @@ public class HrCaseServiceImpl implements HrCaseService {
             }
             return Files.readAllLines(file, StandardCharsets.UTF_8);
         } catch (Exception ignored) {
+            log.debug("Could not read lines from file '{}', returning empty: {}", file, ignored.getMessage());
             return List.of();
         }
     }
@@ -372,7 +378,7 @@ public class HrCaseServiceImpl implements HrCaseService {
         try {
             Files.createDirectories(BASE_DIR);
         } catch (Exception ignored) {
-            // ignore
+            log.debug("Could not create HR base directory, persistence may fail: {}", ignored.getMessage());
         }
         writeLines(CASES_FILE, encodeCases());
         writeLines(ACTIONS_FILE, encodeActions());
@@ -434,7 +440,7 @@ public class HrCaseServiceImpl implements HrCaseService {
             Files.write(file, lines, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (Exception ignored) {
-            // ignore persistence errors
+            log.debug("Could not write HR data to file '{}', in-memory state is preserved: {}", file, ignored.getMessage());
         }
     }
 
@@ -442,6 +448,7 @@ public class HrCaseServiceImpl implements HrCaseService {
         try {
             return HrCaseStage.valueOf(v);
         } catch (Exception ignored) {
+            log.debug("Unknown HrCaseStage value '{}', defaulting to SCREENING", v);
             return HrCaseStage.SCREENING;
         }
     }
@@ -450,6 +457,7 @@ public class HrCaseServiceImpl implements HrCaseService {
         try {
             return HrRiskLevel.valueOf(v);
         } catch (Exception ignored) {
+            log.debug("Unknown HrRiskLevel value '{}', defaulting to MEDIUM", v);
             return HrRiskLevel.MEDIUM;
         }
     }
@@ -458,6 +466,7 @@ public class HrCaseServiceImpl implements HrCaseService {
         try {
             return HrCaseStatus.valueOf(v);
         } catch (Exception ignored) {
+            log.debug("Unknown HrCaseStatus value '{}', defaulting to OPEN", v);
             return HrCaseStatus.OPEN;
         }
     }
@@ -466,6 +475,7 @@ public class HrCaseServiceImpl implements HrCaseService {
         try {
             return HrActionStatus.valueOf(v);
         } catch (Exception ignored) {
+            log.debug("Unknown HrActionStatus value '{}', defaulting to TODO", v);
             return HrActionStatus.TODO;
         }
     }

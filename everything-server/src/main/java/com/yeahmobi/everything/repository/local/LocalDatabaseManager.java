@@ -1,6 +1,8 @@
 package com.yeahmobi.everything.repository.local;
 
 import com.yeahmobi.everything.common.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
  */
 public class LocalDatabaseManager {
 
+    private static final Logger log = LoggerFactory.getLogger(LocalDatabaseManager.class);
     private static final String INIT_SQL_RESOURCE = "sql/init-local.sql";
     private static final String DEFAULT_DB_PATH = System.getProperty("user.home")
             + "/.yeahmobi-everything/data.db";
@@ -104,7 +107,7 @@ public class LocalDatabaseManager {
             try {
                 connection.close();
             } catch (SQLException e) {
-                // Ignore close errors
+                log.debug("Ignoring close error for local DB connection: {}", e.getMessage());
             }
             connection = null;
         }

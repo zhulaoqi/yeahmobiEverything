@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.workfollowup;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +14,7 @@ import java.util.Map;
  */
 public final class WorkReminderStateReader {
 
+    private static final Logger log = LoggerFactory.getLogger(WorkReminderStateReader.class);
     private static final Path STATE_PATH = Path.of(
             System.getProperty("user.home"),
             ".everything-assistant",
@@ -46,7 +50,7 @@ public final class WorkReminderStateReader {
                 }
             }
         } catch (Exception ignored) {
-            // UI should keep working without reminder state file.
+            log.debug("Could not read reminder state file, UI continues without reminder state: {}", ignored.getMessage());
         }
         return out;
     }

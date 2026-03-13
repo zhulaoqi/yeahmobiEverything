@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.machineops;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +17,7 @@ import java.util.List;
  */
 public class CliAuditStore {
 
+    private static final Logger log = LoggerFactory.getLogger(CliAuditStore.class);
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Path STORAGE = Path.of(
             System.getProperty("user.home"),
@@ -62,7 +66,7 @@ public class CliAuditStore {
                     StandardOpenOption.APPEND
             );
         } catch (Exception ignored) {
-            // skip audit errors
+            log.debug("Could not write CLI audit entry, skipping: {}", ignored.getMessage());
         }
     }
 
