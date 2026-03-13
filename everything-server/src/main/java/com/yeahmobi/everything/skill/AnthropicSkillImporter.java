@@ -83,106 +83,23 @@ public class AnthropicSkillImporter {
 
         for (Path file : skillFiles) {
             try {
-                String content = Files.readString(file, StandardCharsets.UTF_8);
-                String relPath = root.relativize(file.getParent()).toString().replace("\\", "/");
-                String sourceId = "anthropic/" + relPath;
-                String defaultName = file.getParent().getFileName().toString();
-                String defaultCategory = relPath.contains("/") ? relPath.split("/")[0] : "Anthropic";
-                SkillManifest manifest = applyCoreSkillProfile(
-                        parseManifest(content, defaultName, defaultCategory),
-                        relPath
-                );
-
-                String name = manifest.name();
-                String description = manifest.description();
-                String category = manifest.category();
-                String promptTemplate = manifest.promptTemplate();
-                String id = UUID.nameUUIDFromBytes(sourceId.getBytes(StandardCharsets.UTF_8)).toString();
-
-                var existingOpt = skillRepository.getSkill(id);
-                if (existingOpt.isPresent()) {
-                    SkillAdmin repairedSkill = mergeForRepair(existingOpt.get(), manifest);
-                    if (hasMeaningfulDiff(existingOpt.get(), repairedSkill)) {
-                        skillRepository.updateSkill(repairedSkill);
-                        repaired++;
-                    } else {
-                        skipped++;
-                    }
-                    continue;
-                }
-
-                SkillAdmin skill = new SkillAdmin(
-                        id,
-                        name,
-                        description,
-                        "default.png",
-                        category,
-                        true,
-                        manifest.usageGuide(),
-                        manifest.examples(),
-                        null,           // i18nJson
-                        "external",     // source
-                        manifest.sourceLang(),
-                        "basic",        // qualityTier
-                        manifest.toolIds(),
-                        manifest.toolGroups(),
-                        manifest.contextPolicy(),
-                        SkillType.GENERAL,
-                        SkillKind.PROMPT_ONLY,
-                        promptTemplate,
-                        manifest.executionMode(),
-                        System.currentTimeMillis()
-                );
-                skillRepository.saveSkill(skill);
-
-                // Best-effort localization after import (non-blocking on failures)
-                if (localizer != null) {
-                    localizationAttempted++;
-                    var payloadOpt = localizer.localizeToZhCn(skill);
-                    if (payloadOpt.isPresent()) {
-                        var payload = payloadOpt.get();
-                        String localizedDescription = payload.localizedOneLine();
-                        String localizedUsageGuide = payload.localizedUsageGuide();
-                        SkillAdmin updated = new SkillAdmin(
-                                skill.id(),
-                                skill.name(),
-                                (localizedDescription != null && !localizedDescription.isBlank())
-                                        ? localizedDescription
-                                        : skill.description(),
-                                skill.icon(),
-                                skill.category(),
-                                skill.enabled(),
-                                (localizedUsageGuide != null && !localizedUsageGuide.isBlank())
-                                        ? localizedUsageGuide
-                                        : skill.usageGuide(),
-                                (payload.exampleInputs() != null && !payload.exampleInputs().isEmpty())
-                                        ? payload.exampleInputs()
-                                        : skill.examples(),
-                                payload.i18nJson(),
-                                skill.source(),
-                                skill.sourceLang(),
-                                skill.qualityTier(),
-                                skill.toolIds(),
-                                skill.toolGroups(),
-                                skill.contextPolicy(),
-                                skill.type(),
-                                skill.kind(),
-                                skill.promptTemplate(),
-                                skill.executionMode(),
-                                skill.createdAt()
-                        );
-                        try {
-                            skillRepository.updateSkill(updated);
-                            localizationSucceeded++;
-                        } catch (Exception ignored) {
-                            localizationFailed++;
-                            log.debug("Localization persistence failed for skill, continuing: {}", ignored.getMessage());
+                SingleImportResult result = importSingleSkillFile(file, root, localizer);
+                switch (result.outcome()) {
+                    case IMPORTED -> {
+                        imported++;
+                        if (result.localizationAttempted()) {
+                            localizationAttempted++;
+                            if (result.localizationSucceeded()) {
+                                localizationSucceeded++;
+                            } else {
+                                localizationFailed++;
+                            }
                         }
-                    } else {
-                        localizationFailed++;
                     }
+                    case REPAIRED -> repaired++;
+                    case SKIPPED -> skipped++;
+                    case FAILED -> failed++;
                 }
-                imported++;
             } catch (Exception ex) {
                 failed++;
                 log.warn("Failed to import skill from path, skipping: {}", ex.getMessage());
@@ -200,6 +117,139 @@ public class AnthropicSkillImporter {
                 true, "", scanned, imported, repaired, skipped, failed,
                 localizationAttempted, localizationSucceeded, localizationFailed
         );
+    }
+
+    /**
+     * Result of importing a single SKILL.md file.
+     */
+    private enum SingleImportOutcome {
+        IMPORTED, REPAIRED, SKIPPED, FAILED
+    }
+
+    private record SingleImportResult(
+            SingleImportOutcome outcome,
+            boolean localizationAttempted,
+            boolean localizationSucceeded
+    ) {
+        static SingleImportResult repaired() {
+            return new SingleImportResult(SingleImportOutcome.REPAIRED, false, false);
+        }
+        static SingleImportResult skipped() {
+            return new SingleImportResult(SingleImportOutcome.SKIPPED, false, false);
+        }
+        static SingleImportResult failed() {
+            return new SingleImportResult(SingleImportOutcome.FAILED, false, false);
+        }
+        static SingleImportResult imported(boolean locAttempted, boolean locSucceeded) {
+            return new SingleImportResult(SingleImportOutcome.IMPORTED, locAttempted, locSucceeded);
+        }
+    }
+
+    /**
+     * Imports a single SKILL.md file: parses the manifest, checks for duplicates,
+     * saves or repairs the skill, and optionally localizes it.
+     */
+    private SingleImportResult importSingleSkillFile(
+            Path file, Path root, SkillLocalizationService localizer
+    ) throws IOException {
+        String content = Files.readString(file, StandardCharsets.UTF_8);
+        String relPath = root.relativize(file.getParent()).toString().replace("\\", "/");
+        String sourceId = "anthropic/" + relPath;
+        String defaultName = file.getParent().getFileName().toString();
+        String defaultCategory = relPath.contains("/") ? relPath.split("/")[0] : "Anthropic";
+        SkillManifest manifest = applyCoreSkillProfile(
+                parseManifest(content, defaultName, defaultCategory),
+                relPath
+        );
+
+        String name = manifest.name();
+        String description = manifest.description();
+        String category = manifest.category();
+        String promptTemplate = manifest.promptTemplate();
+        String id = UUID.nameUUIDFromBytes(sourceId.getBytes(StandardCharsets.UTF_8)).toString();
+
+        var existingOpt = skillRepository.getSkill(id);
+        if (existingOpt.isPresent()) {
+            SkillAdmin repairedSkill = mergeForRepair(existingOpt.get(), manifest);
+            if (hasMeaningfulDiff(existingOpt.get(), repairedSkill)) {
+                skillRepository.updateSkill(repairedSkill);
+                return SingleImportResult.repaired();
+            } else {
+                return SingleImportResult.skipped();
+            }
+        }
+
+        SkillAdmin skill = new SkillAdmin(
+                id,
+                name,
+                description,
+                "default.png",
+                category,
+                true,
+                manifest.usageGuide(),
+                manifest.examples(),
+                null,           // i18nJson
+                "external",     // source
+                manifest.sourceLang(),
+                "basic",        // qualityTier
+                manifest.toolIds(),
+                manifest.toolGroups(),
+                manifest.contextPolicy(),
+                SkillType.GENERAL,
+                SkillKind.PROMPT_ONLY,
+                promptTemplate,
+                manifest.executionMode(),
+                System.currentTimeMillis()
+        );
+        skillRepository.saveSkill(skill);
+
+        // Best-effort localization after import (non-blocking on failures)
+        boolean locAttempted = false;
+        boolean locSucceeded = false;
+        if (localizer != null) {
+            locAttempted = true;
+            var payloadOpt = localizer.localizeToZhCn(skill);
+            if (payloadOpt.isPresent()) {
+                var payload = payloadOpt.get();
+                String localizedDescription = payload.localizedOneLine();
+                String localizedUsageGuide = payload.localizedUsageGuide();
+                SkillAdmin updated = new SkillAdmin(
+                        skill.id(),
+                        skill.name(),
+                        (localizedDescription != null && !localizedDescription.isBlank())
+                                ? localizedDescription
+                                : skill.description(),
+                        skill.icon(),
+                        skill.category(),
+                        skill.enabled(),
+                        (localizedUsageGuide != null && !localizedUsageGuide.isBlank())
+                                ? localizedUsageGuide
+                                : skill.usageGuide(),
+                        (payload.exampleInputs() != null && !payload.exampleInputs().isEmpty())
+                                ? payload.exampleInputs()
+                                : skill.examples(),
+                        payload.i18nJson(),
+                        skill.source(),
+                        skill.sourceLang(),
+                        skill.qualityTier(),
+                        skill.toolIds(),
+                        skill.toolGroups(),
+                        skill.contextPolicy(),
+                        skill.type(),
+                        skill.kind(),
+                        skill.promptTemplate(),
+                        skill.executionMode(),
+                        skill.createdAt()
+                );
+                try {
+                    skillRepository.updateSkill(updated);
+                    locSucceeded = true;
+                } catch (Exception ignored) {
+                    log.debug("Localization persistence failed for skill, continuing: {}", ignored.getMessage());
+                }
+            }
+        }
+        return SingleImportResult.imported(locAttempted, locSucceeded);
     }
 
     private SkillAdmin mergeForRepair(SkillAdmin existing, SkillManifest manifest) {
