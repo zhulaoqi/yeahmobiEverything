@@ -21,6 +21,13 @@ import java.util.List;
  */
 public class SkillImportRepairRunner {
 
+    private static final Path CURSOR_SKILLS_DIR =
+            Path.of(System.getProperty("user.home"), ".cursor", "skills-cursor");
+    private static final Path CURSOR_SKILLS_ALT_DIR =
+            Path.of(System.getProperty("user.home"), ".cursor", "skills");
+    private static final Path ANTHROPIC_SKILLS_DIR =
+            Path.of(System.getProperty("user.home"), "anthropic", "skills");
+
     public static void main(String[] args) throws Exception {
         Config config = Config.getInstance();
         MySQLDatabaseManager mysql = new MySQLDatabaseManager(config);
@@ -65,10 +72,9 @@ public class SkillImportRepairRunner {
         if (configured != null && !configured.isBlank()) {
             paths.add(configured.trim());
         }
-        String home = System.getProperty("user.home");
-        paths.add(home + "/.cursor/skills-cursor");
-        paths.add(home + "/.cursor/skills");
-        paths.add(home + "/anthropic/skills");
+        paths.add(CURSOR_SKILLS_DIR.toString());
+        paths.add(CURSOR_SKILLS_ALT_DIR.toString());
+        paths.add(ANTHROPIC_SKILLS_DIR.toString());
         return new ArrayList<>(paths);
     }
 

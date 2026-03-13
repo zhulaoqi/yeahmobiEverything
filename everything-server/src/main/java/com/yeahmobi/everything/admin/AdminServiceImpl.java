@@ -121,32 +121,8 @@ public class AdminServiceImpl implements AdminService {
             SkillExecutionMode mode = template.executionMode() != null
                     ? template.executionMode()
                     : SkillExecutionMode.SINGLE;
-            List<String> toolIds = List.of();
-            List<String> toolGroups = List.of();
-            String contextPolicy = "default";
-            String promptTemplate = template.promptTemplate() != null ? template.promptTemplate() : "";
-
-            if (isInformationRetrievalSkill(template.name(), template.description(), template.category())) {
-                toolIds = List.of("web-research");
-                toolGroups = List.of("web-search", "information-retrieval");
-                contextPolicy = "standard";
-                promptTemplate = strengthenInformationRetrievalPrompt(promptTemplate, template.name());
-            } else if (isWorkFollowupSkill(template.name(), template.description(), template.category())) {
-                toolIds = List.of("work-followup");
-                toolGroups = List.of("work-followup", "personal-assistant");
-                contextPolicy = "standard";
-                promptTemplate = strengthenWorkFollowupPrompt(promptTemplate, template.name());
-            } else if (isCliMachineOpsSkill(template.name(), template.description(), template.category())) {
-                toolIds = List.of("os-cli", "os-scheduler");
-                toolGroups = List.of("machine-ops", "os-cli", "os-scheduler");
-                contextPolicy = "standard";
-                promptTemplate = strengthenCliMachineOpsPrompt(promptTemplate, template.name());
-            } else if (isHrExecutionSkill(template.name(), template.description(), template.category())) {
-                toolIds = List.of("work-followup");
-                toolGroups = List.of("hr-assistant", "recruitment", "work-followup");
-                contextPolicy = "standard";
-                promptTemplate = strengthenHrExecutionPrompt(promptTemplate, template.name());
-            }
+            String basePrompt = template.promptTemplate() != null ? template.promptTemplate() : "";
+            SkillProfile profile = resolveSkillProfile(template, basePrompt);
             SkillAdmin skill = new SkillAdmin(
                     UUID.randomUUID().toString(),
                     template.name(),
@@ -160,12 +136,12 @@ public class AdminServiceImpl implements AdminService {
                     "admin",        // source
                     "zh",           // sourceLang
                     "basic",        // qualityTier
-                    toolIds,
-                    toolGroups,
-                    contextPolicy,
+                    profile.toolIds(),
+                    profile.toolGroups(),
+                    profile.contextPolicy(),
                     template.type() != null ? template.type() : SkillType.GENERAL,
                     SkillKind.PROMPT_ONLY,
-                    promptTemplate,
+                    profile.finalPrompt(),
                     mode,
                     System.currentTimeMillis()
             );
@@ -373,6 +349,53 @@ public class AdminServiceImpl implements AdminService {
         }
         AnthropicSkillImporter importer = new AnthropicSkillImporter(skillRepository, cacheService);
         return importer.importFromPathDetailed(repoPath);
+    }
+
+    /**
+     * Holds resolved tool/context/prompt settings for a Skill based on its template characteristics.
+     */
+    private record SkillProfile(
+            List<String> toolIds,
+            List<String> toolGroups,
+            String contextPolicy,
+            String finalPrompt
+    ) {}
+
+    /**
+     * Determines the tool IDs, tool groups, context policy, and strengthened prompt
+     * based on the template's name, description, and category.
+     */
+    private SkillProfile resolveSkillProfile(SkillTemplate template, String basePrompt) {
+        if (isInformationRetrievalSkill(template.name(), template.description(), template.category())) {
+            return new SkillProfile(
+                    List.of("web-research"),
+                    List.of("web-search", "information-retrieval"),
+                    "standard",
+                    strengthenInformationRetrievalPrompt(basePrompt, template.name())
+            );
+        } else if (isWorkFollowupSkill(template.name(), template.description(), template.category())) {
+            return new SkillProfile(
+                    List.of("work-followup"),
+                    List.of("work-followup", "personal-assistant"),
+                    "standard",
+                    strengthenWorkFollowupPrompt(basePrompt, template.name())
+            );
+        } else if (isCliMachineOpsSkill(template.name(), template.description(), template.category())) {
+            return new SkillProfile(
+                    List.of("os-cli", "os-scheduler"),
+                    List.of("machine-ops", "os-cli", "os-scheduler"),
+                    "standard",
+                    strengthenCliMachineOpsPrompt(basePrompt, template.name())
+            );
+        } else if (isHrExecutionSkill(template.name(), template.description(), template.category())) {
+            return new SkillProfile(
+                    List.of("work-followup"),
+                    List.of("hr-assistant", "recruitment", "work-followup"),
+                    "standard",
+                    strengthenHrExecutionPrompt(basePrompt, template.name())
+            );
+        }
+        return new SkillProfile(List.of(), List.of(), "default", basePrompt);
     }
 
     private void invalidateCache() {

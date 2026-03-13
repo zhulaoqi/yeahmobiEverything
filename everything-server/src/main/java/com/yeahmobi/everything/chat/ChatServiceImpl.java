@@ -93,44 +93,23 @@ public class ChatServiceImpl implements ChatService {
     public CompletableFuture<ChatResponse> sendMessage(String skillId, String userMessage, List<ChatMessage> history) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // 1. Fetch Skill configuration
-                Optional<SkillAdmin> skillOpt = skillRepository.getSkill(skillId);
-                String promptTemplate = skillOpt.map(SkillAdmin::promptTemplate).orElse("");
-                SkillKind skillKind = skillOpt.map(SkillAdmin::kind).orElse(SkillKind.PROMPT_ONLY);
-                SkillExecutionMode executionMode = skillOpt.map(SkillAdmin::executionMode)
-                        .orElse(SkillExecutionMode.SINGLE);
-                String skillName = skillOpt.map(SkillAdmin::name).orElse("Skill");
-                List<String> toolIds = skillOpt.map(SkillAdmin::toolIds).orElse(List.of());
-                List<String> toolGroups = skillOpt.map(SkillAdmin::toolGroups).orElse(List.of());
-                String contextPolicy = skillOpt.map(SkillAdmin::contextPolicy).orElse("default");
-                boolean artifactFirst = isArtifactFirstSkill(skillName, toolIds, toolGroups);
-                if (artifactFirst) {
-                    executionMode = SkillExecutionMode.SINGLE;
-                }
-                String effectivePromptTemplate = adaptPromptTemplateForArtifactFirst(skillName, promptTemplate, artifactFirst);
+                // 1. Resolve Skill configuration
+                ResolvedSkillConfig cfg = resolveSkillConfig(skillId, userMessage);
 
-                // 2. Build context with knowledge for KNOWLEDGE_RAG skills
-                String contextMessage;
-                if (skillKind == SkillKind.KNOWLEDGE_RAG) {
-                    contextMessage = buildContextWithKnowledge(skillId, userMessage);
-                } else {
-                    contextMessage = userMessage;
-                }
-
-                // 3. Construct AgentScope request JSON
+                // 2. Construct AgentScope request JSON
                 String requestBody = buildAgentScopeRequestJson(
                         skillId,
-                        effectivePromptTemplate,
-                        contextMessage,
-                        skillName,
+                        cfg.effectivePromptTemplate(),
+                        cfg.contextMessage(),
+                        cfg.skillName(),
                         history,
-                        toolIds,
-                        toolGroups,
-                        contextPolicy
+                        cfg.toolIds(),
+                        cfg.toolGroups(),
+                        cfg.contextPolicy()
                 );
 
-                // 4. Send request to AgentScope Server
-                String apiUrl = resolveAgentScopeUrl(executionMode);
+                // 3. Send request to AgentScope Server
+                String apiUrl = resolveAgentScopeUrl(cfg.executionMode());
                 if (apiUrl == null || apiUrl.isBlank()) {
                     return new ChatResponse(null, null, null, false, "AgentScope 服务未配置");
                 }
@@ -142,7 +121,7 @@ public class ChatServiceImpl implements ChatService {
                 Map<String, String> headers = Map.of("Content-Type", "application/json");
                 String responseBody = httpClientUtil.post(apiUrl, requestBody, headers);
 
-                // 5. Parse AgentScope response
+                // 4. Parse AgentScope response
                 return parseAgentScopeResponse(responseBody);
 
             } catch (Exception e) {
@@ -166,44 +145,23 @@ public class ChatServiceImpl implements ChatService {
     ) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // 1. Fetch Skill configuration
-                Optional<SkillAdmin> skillOpt = skillRepository.getSkill(skillId);
-                String promptTemplate = skillOpt.map(SkillAdmin::promptTemplate).orElse("");
-                SkillKind skillKind = skillOpt.map(SkillAdmin::kind).orElse(SkillKind.PROMPT_ONLY);
-                SkillExecutionMode executionMode = skillOpt.map(SkillAdmin::executionMode)
-                        .orElse(SkillExecutionMode.SINGLE);
-                String skillName = skillOpt.map(SkillAdmin::name).orElse("Skill");
-                List<String> toolIds = skillOpt.map(SkillAdmin::toolIds).orElse(List.of());
-                List<String> toolGroups = skillOpt.map(SkillAdmin::toolGroups).orElse(List.of());
-                String contextPolicy = skillOpt.map(SkillAdmin::contextPolicy).orElse("default");
-                boolean artifactFirst = isArtifactFirstSkill(skillName, toolIds, toolGroups);
-                if (artifactFirst) {
-                    executionMode = SkillExecutionMode.SINGLE;
-                }
-                String effectivePromptTemplate = adaptPromptTemplateForArtifactFirst(skillName, promptTemplate, artifactFirst);
+                // 1. Resolve Skill configuration
+                ResolvedSkillConfig cfg = resolveSkillConfig(skillId, userMessage);
 
-                // 2. Build context with knowledge for KNOWLEDGE_RAG skills
-                String contextMessage;
-                if (skillKind == SkillKind.KNOWLEDGE_RAG) {
-                    contextMessage = buildContextWithKnowledge(skillId, userMessage);
-                } else {
-                    contextMessage = userMessage;
-                }
-
-                // 3. Construct AgentScope request JSON
+                // 2. Construct AgentScope request JSON
                 String requestBody = buildAgentScopeRequestJson(
                         skillId,
-                        effectivePromptTemplate,
-                        contextMessage,
-                        skillName,
+                        cfg.effectivePromptTemplate(),
+                        cfg.contextMessage(),
+                        cfg.skillName(),
                         history,
-                        toolIds,
-                        toolGroups,
-                        contextPolicy
+                        cfg.toolIds(),
+                        cfg.toolGroups(),
+                        cfg.contextPolicy()
                 );
 
-                // 4. Use real streaming endpoints
-                if (executionMode == SkillExecutionMode.MULTI) {
+                // 3. Use real streaming endpoints
+                if (cfg.executionMode() == SkillExecutionMode.MULTI) {
                     // MULTI mode streaming endpoint
                     return sendMessageWithStreaming(requestBody, onDelta);
                 } else {
@@ -435,6 +393,55 @@ public class ChatServiceImpl implements ChatService {
 【用户问题】
 %s
 """.formatted(userMessage != null ? userMessage : "");
+    }
+
+    /**
+     * Holds resolved Skill configuration used by both sendMessage and sendMessageStream.
+     */
+    private record ResolvedSkillConfig(
+            String effectivePromptTemplate,
+            String contextMessage,
+            SkillExecutionMode executionMode,
+            String skillName,
+            List<String> toolIds,
+            List<String> toolGroups,
+            String contextPolicy
+    ) {}
+
+    /**
+     * Fetches and resolves all Skill configuration needed to build an LLM request.
+     *
+     * @param skillId      the Skill identifier
+     * @param userMessage  the raw user message
+     * @return resolved configuration including effective prompt, context message, and tool settings
+     */
+    private ResolvedSkillConfig resolveSkillConfig(String skillId, String userMessage) {
+        Optional<SkillAdmin> skillOpt = skillRepository.getSkill(skillId);
+        String promptTemplate = skillOpt.map(SkillAdmin::promptTemplate).orElse("");
+        SkillKind skillKind = skillOpt.map(SkillAdmin::kind).orElse(SkillKind.PROMPT_ONLY);
+        SkillExecutionMode executionMode = skillOpt.map(SkillAdmin::executionMode)
+                .orElse(SkillExecutionMode.SINGLE);
+        String skillName = skillOpt.map(SkillAdmin::name).orElse("Skill");
+        List<String> toolIds = skillOpt.map(SkillAdmin::toolIds).orElse(List.of());
+        List<String> toolGroups = skillOpt.map(SkillAdmin::toolGroups).orElse(List.of());
+        String contextPolicy = skillOpt.map(SkillAdmin::contextPolicy).orElse("default");
+        boolean artifactFirst = isArtifactFirstSkill(skillName, toolIds, toolGroups);
+        if (artifactFirst) {
+            executionMode = SkillExecutionMode.SINGLE;
+        }
+        String effectivePromptTemplate = adaptPromptTemplateForArtifactFirst(skillName, promptTemplate, artifactFirst);
+
+        String contextMessage;
+        if (skillKind == SkillKind.KNOWLEDGE_RAG) {
+            contextMessage = buildContextWithKnowledge(skillId, userMessage);
+        } else {
+            contextMessage = userMessage;
+        }
+
+        return new ResolvedSkillConfig(
+                effectivePromptTemplate, contextMessage, executionMode,
+                skillName, toolIds, toolGroups, contextPolicy
+        );
     }
 
     // ---- Internal helpers ----

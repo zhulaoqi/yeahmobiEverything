@@ -66,7 +66,7 @@ public class CliAuditStore {
                     StandardOpenOption.APPEND
             );
         } catch (Exception ignored) {
-            log.debug("Could not write CLI audit entry, skipping: {}", ignored.getMessage());
+            log.warn("Could not write CLI audit entry, skipping: {}", ignored.getMessage());
         }
     }
 

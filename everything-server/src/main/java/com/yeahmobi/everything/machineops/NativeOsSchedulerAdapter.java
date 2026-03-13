@@ -19,6 +19,10 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(NativeOsSchedulerAdapter.class);
 
+    private static final String OS_MACOS = "macos";
+    private static final String OS_WINDOWS = "windows";
+    private static final String OS_LINUX = "linux";
+
     private final DefaultOsCommandAdapter commandAdapter = new DefaultOsCommandAdapter();
     private static final Path MAC_LAUNCHD_DIR = Path.of(
             System.getProperty("user.home"),
@@ -32,13 +36,13 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
         String safeName = (name == null || name.isBlank())
                 ? "EverythingCli-" + UUID.randomUUID().toString().substring(0, 8)
                 : name.trim();
-        if ("windows".equals(os)) {
+        if (OS_WINDOWS.equals(os)) {
             return createWindowsJob(safeName, command, triggerSpec);
         }
-        if ("macos".equals(os)) {
+        if (OS_MACOS.equals(os)) {
             return createMacJob(safeName, command, triggerSpec);
         }
-        if ("linux".equals(os)) {
+        if (OS_LINUX.equals(os)) {
             return createLinuxJob(safeName, command, triggerSpec);
         }
         return new CliScheduleResult(false, "native-" + os, "未知系统，建议回退应用内调度", null);
@@ -47,10 +51,10 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
     @Override
     public List<CliScheduleJob> listJobs() {
         String os = detectOs();
-        if ("macos".equals(os)) {
+        if (OS_MACOS.equals(os)) {
             return listMacJobs();
         }
-        if ("linux".equals(os)) {
+        if (OS_LINUX.equals(os)) {
             return listLinuxJobs();
         }
         return List.of(); // windows list kept minimal in MVP
@@ -59,7 +63,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
     @Override
     public CliScheduleResult pauseJob(String jobId) {
         String os = detectOs();
-        if ("windows".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_WINDOWS.equals(os) && jobId != null && !jobId.isBlank()) {
             CliCommandRequest req = new CliCommandRequest("schtasks /Change /TN \"" + jobId + "\" /Disable",
                     "", 30, false, true, null);
             CliCommandResult r = commandAdapter.execute(req,
@@ -67,13 +71,13 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             return new CliScheduleResult(r.success(), "native-windows",
                     r.success() ? "原生任务已禁用" : "原生任务禁用失败: " + r.stderr(), null);
         }
-        if ("macos".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_MACOS.equals(os) && jobId != null && !jobId.isBlank()) {
             Path plist = macPlistPath(jobId);
             CliCommandResult r = runSystem("launchctl unload -w \"" + plist + "\"", 30);
             return new CliScheduleResult(r.success(), "native-macos",
                     r.success() ? "原生任务已暂停" : "原生任务暂停失败: " + r.stderr(), null);
         }
-        if ("linux".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_LINUX.equals(os) && jobId != null && !jobId.isBlank()) {
             boolean currentlyPaused = isLinuxJobPaused(jobId);
             CliCommandResult r = runSystem(rewriteLinuxCrontab(jobId, currentlyPaused ? "resume" : "pause"), 30);
             return new CliScheduleResult(r.success(), "native-linux",
@@ -88,7 +92,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
     @Override
     public CliScheduleResult deleteJob(String jobId) {
         String os = detectOs();
-        if ("windows".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_WINDOWS.equals(os) && jobId != null && !jobId.isBlank()) {
             CliCommandRequest req = new CliCommandRequest("schtasks /Delete /TN \"" + jobId + "\" /F",
                     "", 30, false, true, null);
             CliCommandResult r = commandAdapter.execute(req,
@@ -96,7 +100,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             return new CliScheduleResult(r.success(), "native-windows",
                     r.success() ? "原生任务已删除" : "原生任务删除失败: " + r.stderr(), null);
         }
-        if ("macos".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_MACOS.equals(os) && jobId != null && !jobId.isBlank()) {
             Path plist = macPlistPath(jobId);
             runSystem("launchctl unload -w \"" + plist + "\"", 30);
             try {
@@ -106,7 +110,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             }
             return new CliScheduleResult(true, "native-macos", "原生任务已删除", null);
         }
-        if ("linux".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_LINUX.equals(os) && jobId != null && !jobId.isBlank()) {
             CliCommandResult r = runSystem(rewriteLinuxCrontab(jobId, "delete"), 30);
             return new CliScheduleResult(r.success(), "native-linux",
                     r.success() ? "原生任务已删除" : "原生任务删除失败: " + r.stderr(), null);
@@ -117,7 +121,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
     @Override
     public CliScheduleResult runNow(String jobId) {
         String os = detectOs();
-        if ("windows".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_WINDOWS.equals(os) && jobId != null && !jobId.isBlank()) {
             CliCommandRequest req = new CliCommandRequest("schtasks /Run /TN \"" + jobId + "\"",
                     "", 30, false, true, null);
             CliCommandResult r = commandAdapter.execute(req,
@@ -125,13 +129,13 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             return new CliScheduleResult(r.success(), "native-windows",
                     r.success() ? "原生任务已触发" : "原生任务触发失败: " + r.stderr(), null);
         }
-        if ("macos".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_MACOS.equals(os) && jobId != null && !jobId.isBlank()) {
             String label = toMacLabel(jobId);
             CliCommandResult r = runSystem("launchctl start \"" + label + "\"", 30);
             return new CliScheduleResult(r.success(), "native-macos",
                     r.success() ? "原生任务已触发" : "原生任务触发失败: " + r.stderr(), null);
         }
-        if ("linux".equals(os) && jobId != null && !jobId.isBlank()) {
+        if (OS_LINUX.equals(os) && jobId != null && !jobId.isBlank()) {
             CliScheduleJob job = findLinuxJobById(jobId);
             if (job == null || job.command() == null || job.command().isBlank()) {
                 return new CliScheduleResult(false, "native-linux", "未找到任务命令", null);
@@ -249,7 +253,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             }
             return out;
         } catch (Exception e) {
-            log.debug("Could not list macOS launchd jobs, returning empty: {}", e.getMessage());
+            log.warn("Could not list macOS launchd jobs, returning empty: {}", e.getMessage());
             return List.of();
         }
     }

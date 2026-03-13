@@ -214,7 +214,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
             Files.write(STORAGE, lines, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (Exception ignored) {
-            log.debug("Could not persist schedule jobs to disk, continuing with in-memory state: {}", ignored.getMessage());
+            log.warn("Could not persist schedule jobs to disk, continuing with in-memory state: {}", ignored.getMessage());
         }
     }
 
@@ -237,7 +237,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
                 }
             }
         } catch (Exception ignored) {
-            log.debug("Could not load schedule jobs from disk, starting with empty state: {}", ignored.getMessage());
+            log.warn("Could not load schedule jobs from disk, starting with empty state: {}", ignored.getMessage());
         }
     }
 

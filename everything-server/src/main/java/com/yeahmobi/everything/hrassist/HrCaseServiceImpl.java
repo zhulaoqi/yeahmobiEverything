@@ -378,7 +378,7 @@ public class HrCaseServiceImpl implements HrCaseService {
         try {
             Files.createDirectories(BASE_DIR);
         } catch (Exception ignored) {
-            log.debug("Could not create HR base directory, persistence may fail: {}", ignored.getMessage());
+            log.warn("Could not create HR base directory, persistence may fail: {}", ignored.getMessage());
         }
         writeLines(CASES_FILE, encodeCases());
         writeLines(ACTIONS_FILE, encodeActions());

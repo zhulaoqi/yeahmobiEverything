@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 public class SmtpEmailService implements EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(SmtpEmailService.class);
+    private static final String SMTP_READ_TIMEOUT_MS = "10000";
+    private static final String SMTP_CONNECT_TIMEOUT_MS = "10000";
 
     private final String host;
     private final int port;
@@ -108,8 +110,8 @@ public class SmtpEmailService implements EmailService {
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", String.valueOf(port));
-        props.put("mail.smtp.timeout", "10000");
-        props.put("mail.smtp.connectiontimeout", "10000");
+        props.put("mail.smtp.timeout", SMTP_READ_TIMEOUT_MS);
+        props.put("mail.smtp.connectiontimeout", SMTP_CONNECT_TIMEOUT_MS);
 
         if (useSsl) {
             props.put("mail.smtp.ssl.enable", "true");
