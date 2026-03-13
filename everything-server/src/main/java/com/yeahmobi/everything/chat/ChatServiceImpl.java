@@ -16,6 +16,9 @@ import com.yeahmobi.everything.repository.mysql.SkillRepository;
 import com.yeahmobi.everything.skill.SkillExecutionMode;
 import com.yeahmobi.everything.skill.SkillKind;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +38,8 @@ import java.util.function.Consumer;
  * </p>
  */
 public class ChatServiceImpl implements ChatService {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
 
     /** Default timeout for LLM API calls in seconds. */
     static final int DEFAULT_TIMEOUT_SECONDS = 30;
@@ -131,8 +136,8 @@ public class ChatServiceImpl implements ChatService {
                 }
 
                 // Log the actual URL for debugging
-                System.out.println("[ChatService] Sending request to AgentScope: " + apiUrl);
-                System.out.println("[ChatService] Timeout: " + getTimeoutSeconds() + "s");
+                log.debug("Sending request to AgentScope: {}", apiUrl);
+                log.debug("Timeout: {}s", getTimeoutSeconds());
 
                 Map<String, String> headers = Map.of("Content-Type", "application/json");
                 String responseBody = httpClientUtil.post(apiUrl, requestBody, headers);
@@ -382,7 +387,7 @@ public class ChatServiceImpl implements ChatService {
         try {
             cachedText = cacheService.getCachedKnowledgeText(skillId);
         } catch (Exception e) {
-            // Redis unavailable — fall through to database query
+            log.debug("Redis unavailable for knowledge cache lookup, falling through to database query: {}", e.getMessage());
         }
 
         String knowledgeText;
@@ -397,7 +402,7 @@ public class ChatServiceImpl implements ChatService {
                 try {
                     cacheService.cacheKnowledgeText(skillId, knowledgeText, KNOWLEDGE_CACHE_TTL_SECONDS);
                 } catch (Exception e) {
-                    // Redis unavailable — continue without caching
+                    log.debug("Redis unavailable for knowledge cache write, continuing without caching: {}", e.getMessage());
                 }
             }
         }
@@ -546,6 +551,7 @@ public class ChatServiceImpl implements ChatService {
             String merged = knowledgeBaseService.getMergedKnowledgeText(skillId);
             return merged != null ? merged : "";
         } catch (Exception ignored) {
+            log.debug("Could not fetch knowledge text for skill '{}', returning empty: {}", skillId, ignored.getMessage());
             return "";
         }
     }
@@ -562,6 +568,7 @@ public class ChatServiceImpl implements ChatService {
                     .limit(MAX_KNOWLEDGE_SOURCES)
                     .toList();
         } catch (Exception ignored) {
+            log.debug("Could not fetch knowledge sources for skill '{}', returning empty: {}", skillId, ignored.getMessage());
             return List.of();
         }
     }
@@ -690,8 +697,8 @@ public class ChatServiceImpl implements ChatService {
 
     String resolveAgentScopeUrl(SkillExecutionMode mode) {
         String baseUrl = config.getAgentScopeServerUrl();
-        System.out.println("[ChatService] Config agentscope.server.url=" + baseUrl);
-        System.out.println("[ChatService] Config agentscope.server.port=" + config.getAgentScopeServerPort());
+        log.debug("Config agentscope.server.url={}", baseUrl);
+        log.debug("Config agentscope.server.port={}", config.getAgentScopeServerPort());
         if (baseUrl == null || baseUrl.isBlank()) {
             baseUrl = "http://localhost:" + config.getAgentScopeServerPort();
         }

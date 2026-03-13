@@ -4,6 +4,9 @@ import com.yeahmobi.everything.repository.cache.CacheService;
 import com.yeahmobi.everything.repository.mysql.SkillPackageRepository;
 import com.yeahmobi.everything.repository.mysql.SkillRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -22,6 +25,8 @@ import java.util.zip.ZipInputStream;
  * Secure installer for skill ZIP packages.
  */
 public class SkillZipInstaller {
+
+    private static final Logger log = LoggerFactory.getLogger(SkillZipInstaller.class);
 
     private static final long MAX_ZIP_SIZE_BYTES = 20L * 1024 * 1024;
     private static final long MAX_UNZIPPED_SIZE_BYTES = 80L * 1024 * 1024;
@@ -256,9 +261,11 @@ public class SkillZipInstaller {
                         try {
                             Files.deleteIfExists(p);
                         } catch (IOException ignored) {
+                            log.debug("Could not delete temp file during cleanup: {}", p);
                         }
                     });
         } catch (IOException ignored) {
+            log.debug("Could not walk temp directory for cleanup: {}", root);
         }
     }
 

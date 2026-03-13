@@ -6,6 +6,9 @@ import com.yeahmobi.everything.common.HttpClientUtil;
 import com.yeahmobi.everything.repository.cache.CacheService;
 import com.yeahmobi.everything.repository.mysql.SkillRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,6 +27,8 @@ import java.util.Objects;
  * Imports Anthropic skills from a local clone of https://github.com/anthropics/skills.
  */
 public class AnthropicSkillImporter {
+
+    private static final Logger log = LoggerFactory.getLogger(AnthropicSkillImporter.class);
 
     private final SkillRepository skillRepository;
     private final CacheService cacheService;
@@ -171,7 +176,7 @@ public class AnthropicSkillImporter {
                             localizationSucceeded++;
                         } catch (Exception ignored) {
                             localizationFailed++;
-                            // ignore localization persistence failures
+                            log.debug("Localization persistence failed for skill, continuing: {}", ignored.getMessage());
                         }
                     } else {
                         localizationFailed++;
@@ -180,6 +185,7 @@ public class AnthropicSkillImporter {
                 imported++;
             } catch (Exception ex) {
                 failed++;
+                log.warn("Failed to import skill from path, skipping: {}", ex.getMessage());
             }
         }
 
@@ -187,7 +193,7 @@ public class AnthropicSkillImporter {
             try {
                 cacheService.invalidateSkillCache();
             } catch (Exception ignored) {
-                // ignore cache failures
+                log.debug("Cache invalidation failed after skill import, continuing: {}", ignored.getMessage());
             }
         }
         return new SkillImportReport(
@@ -299,6 +305,7 @@ public class AnthropicSkillImporter {
             );
             return new SkillLocalizationService(config, httpClientUtil);
         } catch (Exception ex) {
+            log.debug("buildLocalizer failed, localization will be skipped: {}", ex.getMessage());
             return null;
         }
     }
@@ -622,6 +629,7 @@ public class AnthropicSkillImporter {
         try {
             return SkillExecutionMode.valueOf(value.trim().toUpperCase());
         } catch (Exception ex) {
+            log.debug("Unknown execution_mode value '{}', defaulting to SINGLE", value);
             return SkillExecutionMode.SINGLE;
         }
     }

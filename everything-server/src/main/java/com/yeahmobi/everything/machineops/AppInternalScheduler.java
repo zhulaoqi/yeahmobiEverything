@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.machineops;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AppInternalScheduler implements OsSchedulerAdapter {
 
+    private static final Logger log = LoggerFactory.getLogger(AppInternalScheduler.class);
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Path STORAGE = Path.of(
             System.getProperty("user.home"),
@@ -117,7 +121,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
             try {
                 tick();
             } catch (Exception ignored) {
-                // keep loop alive
+                log.warn("Scheduler tick threw unexpected exception, keeping loop alive: {}", ignored.getMessage());
             }
         }, 30, 30, TimeUnit.SECONDS);
     }
@@ -132,6 +136,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
             try {
                 due = LocalDateTime.parse(job.nextRunAt(), DT);
             } catch (Exception ignored) {
+                log.debug("Could not parse nextRunAt for job '{}', skipping: {}", job.id(), ignored.getMessage());
                 continue;
             }
             if (!due.isAfter(now)) {
@@ -175,6 +180,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
                 LocalDateTime dt = LocalDateTime.parse(value, DT);
                 return dt.format(DT);
             } catch (Exception ignored) {
+                log.debug("Could not parse once: datetime from '{}', defaulting to +1h", triggerSpec);
                 return LocalDateTime.now().plusHours(1).format(DT);
             }
         }
@@ -184,6 +190,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
                 int mins = Math.max(1, Math.min(24 * 60, Integer.parseInt(num)));
                 return LocalDateTime.now().plusMinutes(mins).format(DT);
             } catch (Exception ignored) {
+                log.debug("Could not parse every: interval from '{}', defaulting to +30m", triggerSpec);
                 return LocalDateTime.now().plusMinutes(30).format(DT);
             }
         }
@@ -207,7 +214,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
             Files.write(STORAGE, lines, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (Exception ignored) {
-            // keep in-memory if persistence fails
+            log.debug("Could not persist schedule jobs to disk, continuing with in-memory state: {}", ignored.getMessage());
         }
     }
 
@@ -230,7 +237,7 @@ public class AppInternalScheduler implements OsSchedulerAdapter {
                 }
             }
         } catch (Exception ignored) {
-            // ignore broken file
+            log.debug("Could not load schedule jobs from disk, starting with empty state: {}", ignored.getMessage());
         }
     }
 

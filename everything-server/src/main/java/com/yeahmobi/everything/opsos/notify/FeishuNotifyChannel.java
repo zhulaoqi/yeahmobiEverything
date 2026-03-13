@@ -6,9 +6,10 @@ import com.yeahmobi.everything.common.Config;
 import com.yeahmobi.everything.common.HttpClientUtil;
 import com.yeahmobi.everything.common.NetworkException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Feishu app bot channel for notification hub.
@@ -16,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class FeishuNotifyChannel implements NotifyChannel {
 
-    private static final Logger LOGGER = Logger.getLogger(FeishuNotifyChannel.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(FeishuNotifyChannel.class);
     private static final String FEISHU_APP_ACCESS_TOKEN_URL =
             "https://open.feishu.cn/open-apis/auth/v3/app_access_token/internal";
     private static final String FEISHU_MESSAGE_URL =
@@ -86,7 +87,7 @@ public class FeishuNotifyChannel implements NotifyChannel {
             httpClient.post(url, body.toString(), Map.of("Authorization", "Bearer " + token));
             return new NotifyResult(type(), true, "发送成功");
         } catch (NetworkException e) {
-            LOGGER.log(Level.WARNING, "Feishu notify failed", e);
+            log.warn("Feishu notify failed", e);
             return new NotifyResult(type(), false, e.getMessage() == null ? "发送失败" : e.getMessage());
         }
     }

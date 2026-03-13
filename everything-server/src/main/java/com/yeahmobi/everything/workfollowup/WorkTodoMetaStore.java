@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.workfollowup;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +17,7 @@ import java.util.Map;
  */
 public class WorkTodoMetaStore {
 
+    private static final Logger log = LoggerFactory.getLogger(WorkTodoMetaStore.class);
     private static final Path STORAGE = Path.of(
             System.getProperty("user.home"),
             ".everything-assistant",
@@ -72,7 +76,7 @@ public class WorkTodoMetaStore {
                 }
             }
         } catch (Exception ignored) {
-            // keep empty on load error
+            log.debug("Could not load todo meta from disk, keeping empty: {}", ignored.getMessage());
         }
     }
 
@@ -95,7 +99,7 @@ public class WorkTodoMetaStore {
                     StandardOpenOption.WRITE
             );
         } catch (Exception ignored) {
-            // keep in-memory on persist error
+            log.debug("Could not persist todo meta to disk, continuing with in-memory state: {}", ignored.getMessage());
         }
     }
 
@@ -130,6 +134,7 @@ public class WorkTodoMetaStore {
         try {
             lead = Integer.parseInt(unesc(p[1]));
         } catch (Exception ignored) {
+            log.debug("Could not parse lead minutes value '{}', using default 5", p[1]);
             lead = 5;
         }
         return new WorkTodoMeta(

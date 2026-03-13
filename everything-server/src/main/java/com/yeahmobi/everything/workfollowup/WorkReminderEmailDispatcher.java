@@ -25,8 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  */
 public class WorkReminderEmailDispatcher {
 
-    private static final Logger LOGGER = Logger.getLogger(WorkReminderEmailDispatcher.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(WorkReminderEmailDispatcher.class);
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Pattern NOTE_LEAD_PATTERN = Pattern.compile("(?i)\\[lead=(\\d{1,3})\\]|提前\\s*(\\d{1,3})\\s*分钟");
     private static final Path STATE_PATH = Path.of(
@@ -99,7 +99,7 @@ public class WorkReminderEmailDispatcher {
         try {
             tick();
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "work ops tick failed", e);
+            log.warn("work ops tick failed", e);
         }
     }
 
@@ -403,6 +403,7 @@ public class WorkReminderEmailDispatcher {
             try {
                 return Math.max(1, Math.min(180, Integer.parseInt(value)));
             } catch (Exception ignored) {
+                log.debug("Could not parse lead minutes from note, using default {}", defaultLeadMinutes);
                 return defaultLeadMinutes;
             }
         }
@@ -448,6 +449,7 @@ public class WorkReminderEmailDispatcher {
         try {
             return LocalDateTime.parse(value.trim(), DT);
         } catch (Exception ignored) {
+            log.debug("Could not parse datetime '{}', returning null", value);
             return null;
         }
     }
@@ -459,6 +461,7 @@ public class WorkReminderEmailDispatcher {
         try {
             return LocalTime.parse(value.trim());
         } catch (Exception ignored) {
+            log.debug("Could not parse time '{}', defaulting to 18:00", value);
             return LocalTime.of(18, 0);
         }
     }
@@ -504,7 +507,7 @@ public class WorkReminderEmailDispatcher {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.FINE, "load notify state failed", e);
+            log.debug("load notify state failed", e);
         }
     }
 
@@ -527,7 +530,7 @@ public class WorkReminderEmailDispatcher {
                     StandardOpenOption.WRITE
             );
         } catch (Exception e) {
-            LOGGER.log(Level.FINE, "persist notify state failed", e);
+            log.debug("persist notify state failed", e);
         }
     }
 
@@ -558,6 +561,7 @@ public class WorkReminderEmailDispatcher {
         try {
             attempts = Integer.parseInt(unesc(p[4]));
         } catch (Exception ignored) {
+            log.debug("Could not parse attempts value, defaulting to 0");
             attempts = 0;
         }
         return new NotifyState(

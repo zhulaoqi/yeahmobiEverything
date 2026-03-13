@@ -2,6 +2,8 @@ package com.yeahmobi.everything.feedback;
 
 import com.yeahmobi.everything.notification.FeishuNotifier;
 import com.yeahmobi.everything.repository.mysql.FeedbackRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
@@ -15,6 +17,8 @@ import java.util.UUID;
  * </p>
  */
 public class FeedbackServiceImpl implements FeedbackService {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedbackServiceImpl.class);
 
     private final FeedbackRepository feedbackRepository;
     private final FeishuNotifier feishuNotifier;
@@ -47,9 +51,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             try {
                 feishuNotifier.sendFeedbackNotification(feedback);
             } catch (Exception e) {
-                // Log warning but do not fail the submission
-                // In production, this would use a proper logging framework
-                System.err.println("Failed to send Feishu notification: " + e.getMessage());
+                log.error("Failed to send Feishu notification", e);
             }
 
             return new FeedbackResult(true, "感谢你的反馈，我们已收到并进入评估流程，将持续优化体验。");

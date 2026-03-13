@@ -9,6 +9,9 @@ import com.yeahmobi.everything.common.NetworkException;
 import com.yeahmobi.everything.feedback.Feedback;
 import com.yeahmobi.everything.personalskill.PersonalSkill;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +22,8 @@ import java.util.Map;
  * directly to individuals via Feishu app bot ({@code im/v1/messages} API).
  */
 public class FeishuNotifierImpl implements FeishuNotifier {
+
+    private static final Logger log = LoggerFactory.getLogger(FeishuNotifierImpl.class);
 
     private static final DateTimeFormatter TIMESTAMP_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
@@ -69,11 +74,11 @@ public class FeishuNotifierImpl implements FeishuNotifier {
     @Override
     public boolean sendFeedbackNotification(Feedback feedback) {
         if (adminUserId == null || adminUserId.isBlank()) {
-            System.err.println("Feishu admin user id is not configured");
+            log.warn("Feishu admin user id is not configured");
             return false;
         }
         if (appId == null || appId.isBlank() || appSecret == null || appSecret.isBlank()) {
-            System.err.println("Feishu app_id/app_secret is not configured");
+            log.warn("Feishu app_id/app_secret is not configured");
             return false;
         }
 
@@ -93,7 +98,7 @@ public class FeishuNotifierImpl implements FeishuNotifier {
             httpClient.post(url, body.toString(), Map.of("Authorization", "Bearer " + token));
             return true;
         } catch (Exception e) {
-            System.err.println("Failed to send Feishu notification: " + e.getMessage());
+            log.error("Failed to send Feishu notification", e);
             return false;
         }
     }
@@ -101,11 +106,11 @@ public class FeishuNotifierImpl implements FeishuNotifier {
     @Override
     public boolean sendPersonalSkillReviewNotification(PersonalSkill skill) {
         if (adminUserId == null || adminUserId.isBlank()) {
-            System.err.println("Feishu admin user id is not configured");
+            log.warn("Feishu admin user id is not configured");
             return false;
         }
         if (appId == null || appId.isBlank() || appSecret == null || appSecret.isBlank()) {
-            System.err.println("Feishu app_id/app_secret is not configured");
+            log.warn("Feishu app_id/app_secret is not configured");
             return false;
         }
 
@@ -126,7 +131,7 @@ public class FeishuNotifierImpl implements FeishuNotifier {
             httpClient.post(url, body.toString(), Map.of("Authorization", "Bearer " + token));
             return true;
         } catch (Exception e) {
-            System.err.println("Failed to send Feishu private notification: " + e.getMessage());
+            log.error("Failed to send Feishu notification", e);
             return false;
         }
     }

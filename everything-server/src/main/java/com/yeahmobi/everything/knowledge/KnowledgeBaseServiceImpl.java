@@ -4,12 +4,13 @@ import com.yeahmobi.everything.repository.cache.CacheService;
 import com.yeahmobi.everything.repository.mysql.KnowledgeFileRepository;
 import com.yeahmobi.everything.repository.mysql.SkillKnowledgeBindingRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
 
-    private static final Logger LOGGER = Logger.getLogger(KnowledgeBaseServiceImpl.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeBaseServiceImpl.class);
     private static final Set<String> SUPPORTED_EXTENSIONS = Set.of("pdf", "md", "txt");
     static final long KNOWLEDGE_CACHE_TTL_SECONDS = 1800; // 30 minutes
 
@@ -124,7 +125,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
             try {
                 cacheService.invalidateKnowledgeCache(skillId);
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to invalidate cache for skill: " + skillId, e);
+                log.warn("Failed to invalidate cache for skill: {}", skillId, e);
             }
         }
     }
@@ -140,7 +141,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         try {
             cacheService.invalidateKnowledgeCache(skillId);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to invalidate knowledge cache for skill: " + skillId, e);
+            log.warn("Failed to invalidate knowledge cache for skill: {}", skillId, e);
         }
     }
 
@@ -150,7 +151,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
         try {
             cacheService.invalidateKnowledgeCache(skillId);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to invalidate knowledge cache for skill: " + skillId, e);
+            log.warn("Failed to invalidate knowledge cache for skill: {}", skillId, e);
         }
     }
 
@@ -173,7 +174,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
                 return cached.get();
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Redis unavailable, falling back to DB", e);
+            log.warn("Redis unavailable, falling back to DB", e);
         }
 
         // Fetch from DB
@@ -188,7 +189,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
             try {
                 cacheService.cacheKnowledgeText(skillId, merged, KNOWLEDGE_CACHE_TTL_SECONDS);
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to cache knowledge text", e);
+                log.warn("Failed to cache knowledge text", e);
             }
         }
         return merged;
@@ -245,7 +246,7 @@ public class KnowledgeBaseServiceImpl implements KnowledgeBaseService {
                 cacheService.invalidateKnowledgeCache(skillId);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to invalidate related caches for file: " + fileId, e);
+            log.warn("Failed to invalidate related caches for file: {}", fileId, e);
         }
     }
 }

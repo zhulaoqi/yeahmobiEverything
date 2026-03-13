@@ -7,11 +7,12 @@ import com.yeahmobi.everything.skill.Skill;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Redis-based implementation of {@link CacheService}.
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
  */
 public class CacheServiceImpl implements CacheService {
 
-    private static final Logger LOGGER = Logger.getLogger(CacheServiceImpl.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(CacheServiceImpl.class);
 
     static final String SESSION_KEY_PREFIX = "session:";
     static final String SKILLS_ALL_KEY = "skills:all";
@@ -68,7 +69,7 @@ public class CacheServiceImpl implements CacheService {
             String json = gson.toJson(session);
             jedis.set(key, json, SetParams.setParams().ex(ttlSeconds));
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to cache session for token: " + token, e);
+            log.warn("Failed to cache session for token: {}", token, e);
         }
     }
 
@@ -82,7 +83,7 @@ public class CacheServiceImpl implements CacheService {
             }
             return Optional.of(gson.fromJson(json, Session.class));
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to get cached session for token: " + token, e);
+            log.warn("Failed to get cached session for token: {}", token, e);
             return Optional.empty();
         }
     }
@@ -93,7 +94,7 @@ public class CacheServiceImpl implements CacheService {
             String key = SESSION_KEY_PREFIX + token;
             jedis.del(key);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to remove cached session for token: " + token, e);
+            log.warn("Failed to remove cached session for token: {}", token, e);
         }
     }
 
@@ -103,7 +104,7 @@ public class CacheServiceImpl implements CacheService {
             String json = gson.toJson(skills);
             jedis.set(SKILLS_ALL_KEY, json, SetParams.setParams().ex(ttlSeconds));
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to cache skill list", e);
+            log.warn("Failed to cache skill list", e);
         }
     }
 
@@ -118,7 +119,7 @@ public class CacheServiceImpl implements CacheService {
             List<Skill> skills = gson.fromJson(json, listType);
             return Optional.of(skills);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to get cached skill list", e);
+            log.warn("Failed to get cached skill list", e);
             return Optional.empty();
         }
     }
@@ -128,7 +129,7 @@ public class CacheServiceImpl implements CacheService {
         try (Jedis jedis = redisManager.getJedis()) {
             jedis.del(SKILLS_ALL_KEY);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to invalidate skill cache", e);
+            log.warn("Failed to invalidate skill cache", e);
         }
     }
 
@@ -138,7 +139,7 @@ public class CacheServiceImpl implements CacheService {
             String key = KNOWLEDGE_KEY_PREFIX + skillId;
             jedis.set(key, text, SetParams.setParams().ex(ttlSeconds));
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to cache knowledge text for skill: " + skillId, e);
+            log.warn("Failed to cache knowledge text for skill: {}", skillId, e);
         }
     }
 
@@ -152,7 +153,7 @@ public class CacheServiceImpl implements CacheService {
             }
             return Optional.of(text);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to get cached knowledge text for skill: " + skillId, e);
+            log.warn("Failed to get cached knowledge text for skill: {}", skillId, e);
             return Optional.empty();
         }
     }
@@ -163,7 +164,7 @@ public class CacheServiceImpl implements CacheService {
             String key = KNOWLEDGE_KEY_PREFIX + skillId;
             jedis.del(key);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to invalidate knowledge cache for skill: " + skillId, e);
+            log.warn("Failed to invalidate knowledge cache for skill: {}", skillId, e);
         }
     }
 }

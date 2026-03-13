@@ -6,6 +6,8 @@ import com.yeahmobi.everything.skill.SkillKind;
 import com.yeahmobi.everything.skill.SkillType;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,6 +29,7 @@ import java.util.Optional;
  */
 public class SkillRepositoryImpl implements SkillRepository {
 
+    private static final Logger log = LoggerFactory.getLogger(SkillRepositoryImpl.class);
     private static final Gson GSON = new Gson();
     private static final Type LIST_STRING_TYPE = new TypeToken<List<String>>() {}.getType();
 
@@ -222,6 +225,7 @@ public class SkillRepositoryImpl implements SkillRepository {
         try {
             return SkillExecutionMode.valueOf(value);
         } catch (IllegalArgumentException ex) {
+            log.debug("Unknown execution_mode value '{}', defaulting to SINGLE", value);
             return SkillExecutionMode.SINGLE;
         }
     }
@@ -243,6 +247,7 @@ public class SkillRepositoryImpl implements SkillRepository {
                     .filter(s -> s != null && !s.isBlank())
                     .toList();
         } catch (Exception ex) {
+            log.debug("Failed to parse JSON list field, returning empty list: {}", ex.getMessage());
             return List.of();
         }
     }

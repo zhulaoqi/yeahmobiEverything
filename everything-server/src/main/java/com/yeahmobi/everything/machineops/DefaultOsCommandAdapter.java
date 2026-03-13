@@ -1,5 +1,8 @@
 package com.yeahmobi.everything.machineops;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -12,6 +15,8 @@ import java.util.concurrent.TimeUnit;
  * Default OS adapter for executing shell commands.
  */
 public class DefaultOsCommandAdapter implements OsCommandAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultOsCommandAdapter.class);
 
     @Override
     public CliCommandResult execute(CliCommandRequest request, CommandPolicyDecision policyDecision) {
@@ -61,6 +66,7 @@ public class DefaultOsCommandAdapter implements OsCommandAdapter {
                     exitCode == 0 ? "执行成功" : "执行失败"
             );
         } catch (Exception e) {
+            log.warn("Command execution failed: {}", e.getMessage());
             return new CliCommandResult(false, true,
                     policyDecision != null ? policyDecision.riskLevel() : CommandRiskLevel.MEDIUM,
                     -1, osType, command, "", e.getMessage(), "命令执行异常");

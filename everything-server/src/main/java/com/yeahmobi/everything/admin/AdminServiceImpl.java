@@ -13,11 +13,12 @@ import com.yeahmobi.everything.skill.SkillExecutionMode;
 import com.yeahmobi.everything.skill.SkillKind;
 import com.yeahmobi.everything.skill.SkillType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Implementation of {@link AdminService}.
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
  */
 public class AdminServiceImpl implements AdminService {
 
-    private static final Logger LOGGER = Logger.getLogger(AdminServiceImpl.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(AdminServiceImpl.class);
 
     private final SkillRepository skillRepository;
     private final FeedbackRepository feedbackRepository;
@@ -98,7 +99,7 @@ public class AdminServiceImpl implements AdminService {
         } catch (IllegalArgumentException e) {
             return new SkillIntegrationResult(false, e.getMessage(), null);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to integrate skill", e);
+            log.error("Failed to integrate skill", e);
             return new SkillIntegrationResult(false, "Skill 集成失败: " + e.getMessage(), null);
         }
     }
@@ -172,7 +173,7 @@ public class AdminServiceImpl implements AdminService {
             invalidateCache();
             return new SkillIntegrationResult(true, "Skill 创建成功", skill);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to create skill from template", e);
+            log.error("Failed to create skill from template", e);
             return new SkillIntegrationResult(false, "Skill 创建失败: " + e.getMessage(), null);
         }
     }
@@ -240,7 +241,7 @@ public class AdminServiceImpl implements AdminService {
             invalidateCache();
             return new SkillIntegrationResult(true, "知识型 Skill 创建成功", skill);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to create knowledge skill", e);
+            log.error("Failed to create knowledge skill", e);
             return new SkillIntegrationResult(false, "知识型 Skill 创建失败: " + e.getMessage(), null);
         }
     }
@@ -317,7 +318,7 @@ public class AdminServiceImpl implements AdminService {
             invalidateCache();
             return new SkillIntegrationResult(true, "展示字段已更新", updated);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to update skill display: " + skillId, e);
+            log.warn("Failed to update skill display: {}", skillId, e);
             return new SkillIntegrationResult(false, "更新失败: " + e.getMessage(), null);
         }
     }
@@ -350,7 +351,7 @@ public class AdminServiceImpl implements AdminService {
             }
             return "已设置为管理员";
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to promote user", e);
+            log.warn("Failed to promote user", e);
             return "设置失败: " + e.getMessage();
         }
     }
@@ -378,7 +379,7 @@ public class AdminServiceImpl implements AdminService {
         try {
             cacheService.invalidateSkillCache();
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to invalidate skill cache", e);
+            log.warn("Failed to invalidate skill cache", e);
         }
     }
 

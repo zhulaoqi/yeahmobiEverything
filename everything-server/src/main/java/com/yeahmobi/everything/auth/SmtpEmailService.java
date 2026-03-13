@@ -3,8 +3,8 @@ package com.yeahmobi.everything.auth;
 import com.yeahmobi.everything.common.Config;
 
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SMTP implementation of {@link EmailService}.
@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  */
 public class SmtpEmailService implements EmailService {
 
-    private static final Logger LOGGER = Logger.getLogger(SmtpEmailService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(SmtpEmailService.class);
 
     private final String host;
     private final int port;
@@ -64,12 +64,12 @@ public class SmtpEmailService implements EmailService {
     @Override
     public boolean sendVerificationCode(String toEmail, String code) {
         if (toEmail == null || toEmail.isBlank()) {
-            LOGGER.warning("Recipient email is null or blank");
+            log.warn("Recipient email is null or blank");
             return false;
         }
         if (username.isBlank() || password.isBlank()) {
-            LOGGER.warning("SMTP credentials not configured. Falling back to console log.");
-            LOGGER.info("【模拟发送】验证码已发送到 " + toEmail + ": " + code);
+            log.warn("SMTP credentials not configured. Falling back to console log.");
+            log.info("【模拟发送】验证码已发送到 {}: {}", toEmail, code);
             return true;
         }
 
@@ -85,17 +85,17 @@ public class SmtpEmailService implements EmailService {
 
             jakarta.mail.Transport.send(message);
 
-            LOGGER.info("Verification code email sent to: " + toEmail);
+            log.info("Verification code email sent to: {}", toEmail);
             return true;
 
         } catch (jakarta.mail.AuthenticationFailedException e) {
-            LOGGER.log(Level.WARNING, "SMTP authentication failed. Check smtp.username and smtp.password.", e);
+            log.warn("SMTP authentication failed. Check smtp.username and smtp.password.", e);
             return false;
         } catch (jakarta.mail.MessagingException e) {
-            LOGGER.log(Level.WARNING, "Failed to send verification email to: " + toEmail, e);
+            log.warn("Failed to send verification email to: {}", toEmail, e);
             return false;
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Unexpected error sending email to: " + toEmail, e);
+            log.warn("Unexpected error sending email to: {}", toEmail, e);
             return false;
         }
     }
