@@ -10,8 +10,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link AuthService} providing email/password login,
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class AuthServiceImpl implements AuthService {
 
-    private static final Logger LOGGER = Logger.getLogger(AuthServiceImpl.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     /** Session TTL in seconds: 7 days */
     static final long SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -119,28 +119,28 @@ public class AuthServiceImpl implements AuthService {
 
         // Check if MySQL is available (required for Feishu login)
         if (userRepository == null) {
-            LOGGER.warning("Feishu login requires MySQL connection, but MySQL is unavailable");
+            log.warn("Feishu login requires MySQL connection, but MySQL is unavailable");
             return new AuthResult(false, "飞书登录需要 MySQL 数据库支持，请检查数据库连接配置", null);
         }
 
         // Step 1: Exchange code for access token
-        LOGGER.info("Attempting to exchange Feishu authorization code for access token");
+        log.info("Attempting to exchange Feishu authorization code for access token");
         String accessToken = feishuOAuthService.exchangeCodeForToken(authorizationCode);
         if (accessToken == null) {
-            LOGGER.warning("Failed to exchange Feishu authorization code for token");
+            log.warn("Failed to exchange Feishu authorization code for token");
             return new AuthResult(false, "飞书授权失败，请检查应用配置（app_id/app_secret）", null);
         }
 
         // Step 2: Get user info from Feishu
-        LOGGER.info("Attempting to fetch Feishu user info with access token");
+        log.info("Attempting to fetch Feishu user info with access token");
         FeishuOAuthService.FeishuUserInfo feishuUser = feishuOAuthService.getUserInfo(accessToken);
         if (feishuUser == null || feishuUser.userId() == null || feishuUser.userId().isBlank()) {
-            LOGGER.warning("Failed to get Feishu user info or user_id is empty");
+            log.warn("Failed to get Feishu user info or user_id is empty");
             return new AuthResult(false, "获取飞书用户信息失败，请检查应用权限配置", null);
         }
         
-        LOGGER.log(Level.INFO, "Successfully retrieved Feishu user info: userId={0}, name={1}, email={2}",
-                new Object[]{feishuUser.userId(), feishuUser.name(), feishuUser.email()});
+        log.info("Successfully retrieved Feishu user info: userId={}, name={}, email={}",
+                feishuUser.userId(), feishuUser.name(), feishuUser.email());
 
         // Step 3: Find or create user by feishu_user_id
         User user;
@@ -187,11 +187,11 @@ public class AuthServiceImpl implements AuthService {
         if (emailService != null) {
             boolean sent = emailService.sendVerificationCode(email, code);
             if (!sent) {
-                LOGGER.log(Level.WARNING, "Email sending failed for {0}, code: {1}", new Object[]{email, code});
+                log.warn("Email sending failed for {}, code: {}", email, code);
             }
             return sent;
         } else {
-            LOGGER.log(Level.INFO, "【EmailService 未配置，控制台输出】验证码: {0} -> {1}", new Object[]{email, code});
+            log.info("【EmailService 未配置，控制台输出】验证码: {} -> {}", email, code);
             return true;
         }
     }

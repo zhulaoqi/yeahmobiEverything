@@ -12,8 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lightweight local HTTP server for receiving Feishu OAuth 2.0 callback.
@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  */
 public class OAuthCallbackServer {
 
-    private static final Logger LOGGER = Logger.getLogger(OAuthCallbackServer.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(OAuthCallbackServer.class);
 
     /** Default port for the OAuth callback server. */
     static final int DEFAULT_PORT = 8080;
@@ -89,7 +89,7 @@ public class OAuthCallbackServer {
         server.start();
         running = true;
 
-        LOGGER.info("OAuth callback server started on port " + port);
+        log.info("OAuth callback server started on port {}", port);
     }
 
     /**
@@ -100,7 +100,7 @@ public class OAuthCallbackServer {
             server.stop(1);
             server = null;
             running = false;
-            LOGGER.info("OAuth callback server stopped.");
+            log.info("OAuth callback server stopped.");
         }
 
         // Shut down server executor
@@ -159,7 +159,7 @@ public class OAuthCallbackServer {
                     os.write(bytes);
                 }
 
-                LOGGER.info("OAuth callback received with authorization code.");
+                log.info("OAuth callback received with authorization code.");
 
                 // Notify the application
                 if (onCodeReceived != null) {
@@ -192,7 +192,7 @@ public class OAuthCallbackServer {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error handling OAuth callback", e);
+            log.warn("Error handling OAuth callback", e);
             String html = buildErrorHtml("处理授权回调时发生错误：" + e.getMessage());
             byte[] bytes = html.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");

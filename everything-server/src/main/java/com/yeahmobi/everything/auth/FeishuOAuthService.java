@@ -10,8 +10,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Service for Feishu OAuth 2.0 authentication.
@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class FeishuOAuthService {
 
-    private static final Logger LOGGER = Logger.getLogger(FeishuOAuthService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(FeishuOAuthService.class);
 
     /** Feishu OAuth authorization endpoint */
     static final String FEISHU_AUTHORIZE_URL = "https://open.feishu.cn/open-apis/authen/v1/authorize";
@@ -83,22 +83,22 @@ public class FeishuOAuthService {
      */
     public String exchangeCodeForToken(String code) {
         if (code == null || code.isBlank()) {
-            LOGGER.warning("Authorization code is null or blank");
+            log.warn("Authorization code is null or blank");
             return null;
         }
 
         try {
             // Step 1: Get app_access_token
-            LOGGER.info("Step 1: Requesting app_access_token from Feishu");
+            log.info("Step 1: Requesting app_access_token from Feishu");
             String appAccessToken = getAppAccessToken();
             if (appAccessToken == null) {
-                LOGGER.warning("Failed to obtain app_access_token - check app_id and app_secret in config");
+                log.warn("Failed to obtain app_access_token - check app_id and app_secret in config");
                 return null;
             }
-            LOGGER.info("Step 1: Successfully obtained app_access_token");
+            log.info("Step 1: Successfully obtained app_access_token");
 
             // Step 2: Exchange code for user access_token
-            LOGGER.info("Step 2: Exchanging authorization code for user access_token");
+            log.info("Step 2: Exchanging authorization code for user access_token");
             JsonObject requestBody = new JsonObject();
             requestBody.addProperty("grant_type", "authorization_code");
             requestBody.addProperty("code", code);
@@ -108,31 +108,30 @@ public class FeishuOAuthService {
             );
 
             String response = httpClient.post(FEISHU_TOKEN_URL, requestBody.toString(), headers);
-            LOGGER.log(Level.FINE, "Feishu token exchange response: {0}", response);
+            log.debug("Feishu token exchange response: {}", response);
             JsonObject json = JsonParser.parseString(response).getAsJsonObject();
 
             int responseCode = json.has("code") ? json.get("code").getAsInt() : -1;
             if (responseCode != 0) {
                 String msg = json.has("msg") ? json.get("msg").getAsString() : "unknown error";
-                LOGGER.log(Level.WARNING, "Feishu token exchange failed: code={0}, msg={1}, response={2}",
-                        new Object[]{responseCode, msg, response});
+                log.warn("Feishu token exchange failed: code={}, msg={}, response={}", responseCode, msg, response);
                 return null;
             }
 
             JsonObject data = json.has("data") ? json.getAsJsonObject("data") : null;
             if (data == null || !data.has("access_token")) {
-                LOGGER.log(Level.WARNING, "Feishu token response missing data.access_token: {0}", response);
+                log.warn("Feishu token response missing data.access_token: {}", response);
                 return null;
             }
 
-            LOGGER.info("Step 2: Successfully obtained user access_token");
+            log.info("Step 2: Successfully obtained user access_token");
             return data.get("access_token").getAsString();
 
         } catch (NetworkException e) {
-            LOGGER.log(Level.WARNING, "Network error during Feishu token exchange: " + e.getMessage(), e);
+            log.warn("Network error during Feishu token exchange: {}", e.getMessage(), e);
             return null;
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Unexpected error during Feishu token exchange: " + e.getMessage(), e);
+            log.warn("Unexpected error during Feishu token exchange: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -145,31 +144,30 @@ public class FeishuOAuthService {
      */
     public FeishuUserInfo getUserInfo(String accessToken) {
         if (accessToken == null || accessToken.isBlank()) {
-            LOGGER.warning("Access token is null or blank");
+            log.warn("Access token is null or blank");
             return null;
         }
 
         try {
-            LOGGER.info("Step 3: Fetching user info from Feishu");
+            log.info("Step 3: Fetching user info from Feishu");
             Map<String, String> headers = Map.of(
                     "Authorization", "Bearer " + accessToken
             );
 
             String response = httpClient.get(FEISHU_USER_INFO_URL, headers);
-            LOGGER.log(Level.FINE, "Feishu user info response: {0}", response);
+            log.debug("Feishu user info response: {}", response);
             JsonObject json = JsonParser.parseString(response).getAsJsonObject();
 
             int responseCode = json.has("code") ? json.get("code").getAsInt() : -1;
             if (responseCode != 0) {
                 String msg = json.has("msg") ? json.get("msg").getAsString() : "unknown error";
-                LOGGER.log(Level.WARNING, "Feishu user info request failed: code={0}, msg={1}, response={2}",
-                        new Object[]{responseCode, msg, response});
+                log.warn("Feishu user info request failed: code={}, msg={}, response={}", responseCode, msg, response);
                 return null;
             }
 
             JsonObject data = json.has("data") ? json.getAsJsonObject("data") : null;
             if (data == null) {
-                LOGGER.log(Level.WARNING, "Feishu user info response missing data: {0}", response);
+                log.warn("Feishu user info response missing data: {}", response);
                 return null;
             }
 
@@ -203,19 +201,19 @@ public class FeishuOAuthService {
             }
 
             if (userId.isBlank()) {
-                LOGGER.log(Level.WARNING, "Feishu user identifier (union_id/open_id) is empty in response: {0}", response);
+                log.warn("Feishu user identifier (union_id/open_id) is empty in response: {}", response);
             }
 
-            LOGGER.log(Level.INFO, "Step 3: Successfully fetched user info - userId={0} (from {1}), name={2}, email={3} (from {4})",
-                    new Object[]{userId, userIdType, name, email, emailType});
+            log.info("Step 3: Successfully fetched user info - userId={} (from {}), name={}, email={} (from {})",
+                    userId, userIdType, name, email, emailType);
 
             return new FeishuUserInfo(userId, name, email);
 
         } catch (NetworkException e) {
-            LOGGER.log(Level.WARNING, "Network error during Feishu user info request: " + e.getMessage(), e);
+            log.warn("Network error during Feishu user info request: {}", e.getMessage(), e);
             return null;
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Unexpected error during Feishu user info request: " + e.getMessage(), e);
+            log.warn("Unexpected error during Feishu user info request: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -231,30 +229,29 @@ public class FeishuOAuthService {
         String appId = config.getFeishuOAuthAppId();
         String appSecret = config.getFeishuOAuthAppSecret();
 
-        LOGGER.log(Level.INFO, "Requesting app_access_token with app_id={0}", appId);
+        log.info("Requesting app_access_token with app_id={}", appId);
 
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("app_id", appId);
         requestBody.addProperty("app_secret", appSecret);
 
         String response = httpClient.post(FEISHU_APP_ACCESS_TOKEN_URL, requestBody.toString(), null);
-        LOGGER.log(Level.FINE, "App access token response: {0}", response);
+        log.debug("App access token response: {}", response);
         JsonObject json = JsonParser.parseString(response).getAsJsonObject();
 
         int responseCode = json.has("code") ? json.get("code").getAsInt() : -1;
         if (responseCode != 0) {
             String msg = json.has("msg") ? json.get("msg").getAsString() : "unknown error";
-            LOGGER.log(Level.WARNING, "Failed to get app_access_token: code={0}, msg={1}, response={2}",
-                    new Object[]{responseCode, msg, response});
+            log.warn("Failed to get app_access_token: code={}, msg={}, response={}", responseCode, msg, response);
             return null;
         }
 
         if (!json.has("app_access_token")) {
-            LOGGER.log(Level.WARNING, "Response missing app_access_token field: {0}", response);
+            log.warn("Response missing app_access_token field: {}", response);
             return null;
         }
 
-        LOGGER.info("Successfully obtained app_access_token");
+        log.info("Successfully obtained app_access_token");
         return json.get("app_access_token").getAsString();
     }
 
