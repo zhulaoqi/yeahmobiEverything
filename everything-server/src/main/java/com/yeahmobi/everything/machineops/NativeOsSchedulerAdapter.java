@@ -249,7 +249,7 @@ public class NativeOsSchedulerAdapter implements OsSchedulerAdapter {
             }
             return out;
         } catch (Exception e) {
-            log.debug("Could not list macOS launchd jobs, returning empty: {}", e.getMessage());
+            log.warn("Could not list macOS launchd jobs, returning empty: {}", e.getMessage());
             return List.of();
         }
     }
