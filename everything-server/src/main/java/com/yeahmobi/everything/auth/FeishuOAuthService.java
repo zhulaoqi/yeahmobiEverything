@@ -128,10 +128,10 @@ public class FeishuOAuthService {
             return data.get("access_token").getAsString();
 
         } catch (NetworkException e) {
-            log.warn("Network error during Feishu token exchange: {}", e.getMessage(), e);
+            log.warn("Network error during Feishu token exchange", e);
             return null;
         } catch (Exception e) {
-            log.warn("Unexpected error during Feishu token exchange: {}", e.getMessage(), e);
+            log.warn("Unexpected error during Feishu token exchange", e);
             return null;
         }
     }
@@ -210,10 +210,10 @@ public class FeishuOAuthService {
             return new FeishuUserInfo(userId, name, email);
 
         } catch (NetworkException e) {
-            log.warn("Network error during Feishu user info request: {}", e.getMessage(), e);
+            log.warn("Network error during Feishu user info request", e);
             return null;
         } catch (Exception e) {
-            log.warn("Unexpected error during Feishu user info request: {}", e.getMessage(), e);
+            log.warn("Unexpected error during Feishu user info request", e);
             return null;
         }
     }
