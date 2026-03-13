@@ -26,6 +26,8 @@
         <!-- Dependencies -->
         <gson.version>2.10.1</gson.version>
         <jackson.version>2.17.2</jackson.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <logback.version>1.4.14</logback.version>
 
         <!-- Test Dependencies -->
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
@@ -73,6 +75,18 @@
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+
+            <!-- SLF4J and Logback (Logging) -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
             </dependency>
 
             <!-- Test Dependencies -->
