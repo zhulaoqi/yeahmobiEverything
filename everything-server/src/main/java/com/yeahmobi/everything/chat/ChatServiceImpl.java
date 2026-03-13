@@ -16,6 +16,9 @@ import com.yeahmobi.everything.repository.mysql.SkillRepository;
 import com.yeahmobi.everything.skill.SkillExecutionMode;
 import com.yeahmobi.everything.skill.SkillKind;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +38,8 @@ import java.util.function.Consumer;
  * </p>
  */
 public class ChatServiceImpl implements ChatService {
+
+    private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
 
     /** Default timeout for LLM API calls in seconds. */
     static final int DEFAULT_TIMEOUT_SECONDS = 30;
@@ -131,8 +136,8 @@ public class ChatServiceImpl implements ChatService {
                 }
 
                 // Log the actual URL for debugging
-                System.out.println("[ChatService] Sending request to AgentScope: " + apiUrl);
-                System.out.println("[ChatService] Timeout: " + getTimeoutSeconds() + "s");
+                log.debug("Sending request to AgentScope: {}", apiUrl);
+                log.debug("Timeout: {}s", getTimeoutSeconds());
 
                 Map<String, String> headers = Map.of("Content-Type", "application/json");
                 String responseBody = httpClientUtil.post(apiUrl, requestBody, headers);
@@ -690,8 +695,8 @@ public class ChatServiceImpl implements ChatService {
 
     String resolveAgentScopeUrl(SkillExecutionMode mode) {
         String baseUrl = config.getAgentScopeServerUrl();
-        System.out.println("[ChatService] Config agentscope.server.url=" + baseUrl);
-        System.out.println("[ChatService] Config agentscope.server.port=" + config.getAgentScopeServerPort());
+        log.debug("Config agentscope.server.url={}", baseUrl);
+        log.debug("Config agentscope.server.port={}", config.getAgentScopeServerPort());
         if (baseUrl == null || baseUrl.isBlank()) {
             baseUrl = "http://localhost:" + config.getAgentScopeServerPort();
         }
