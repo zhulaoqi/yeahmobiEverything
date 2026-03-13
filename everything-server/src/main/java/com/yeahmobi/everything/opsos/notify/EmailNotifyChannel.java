@@ -7,16 +7,17 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Email channel for notification hub.
  */
 public class EmailNotifyChannel implements NotifyChannel {
 
-    private static final Logger LOGGER = Logger.getLogger(EmailNotifyChannel.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(EmailNotifyChannel.class);
     private final Config config;
 
     public EmailNotifyChannel(Config config) {
@@ -41,8 +42,8 @@ public class EmailNotifyChannel implements NotifyChannel {
         String fromAddress = config.get("smtp.from", username);
         boolean useSsl = "true".equalsIgnoreCase(config.get("smtp.ssl", "true"));
         if (username.isBlank() || password.isBlank()) {
-            LOGGER.info("Email channel simulate send: to=" + to + ", title="
-                    + (message == null ? "" : message.title()));
+            log.info("Email channel simulate send: to={}, title={}", to,
+                    (message == null ? "" : message.title()));
             return new NotifyResult(type(), true, "SMTP 未配置，已模拟发送");
         }
         try {
@@ -58,7 +59,7 @@ public class EmailNotifyChannel implements NotifyChannel {
             Transport.send(msg);
             return new NotifyResult(type(), true, "发送成功");
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Email notify failed", e);
+            log.warn("Email notify failed", e);
             return new NotifyResult(type(), false, e.getMessage() == null ? "发送失败" : e.getMessage());
         }
     }
